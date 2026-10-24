@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+  body { @apply bg-page text-ink font-sans antialiased; overscroll-behavior-y: none; }
+  button, a { -webkit-touch-callout: none; }
+  input, select, textarea, button { font: inherit; }
+  :focus-visible { @apply outline-none ring-2 ring-primary/60 ring-offset-1; }
+  input[type='number']::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+}
+
+@layer components {
+  .card { @apply bg-white border border-line rounded-xl; }
+  .field-label { @apply block text-sm font-medium text-ink mb-1.5; }
+  .field-input {
+    @apply w-full h-12 rounded-xl border border-line bg-white px-3 text-base md:h-11 md:rounded-lg md:text-[15px] text-ink placeholder:text-ink-muted/70
+      focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none disabled:bg-slate-50 disabled:text-ink-muted;
+  }
+  .field-error { @apply mt-1 text-sm text-danger; }
+  .field-hint { @apply mt-1 text-xs text-ink-muted; }
+  .tabular { font-variant-numeric: tabular-nums; }
+  .skeleton { @apply animate-pulse rounded-md bg-slate-200/70; }
+  /* native-feeling press feedback */
+  .press { @apply transition-transform duration-100 active:scale-[0.96]; }
+  .no-scrollbar { scrollbar-width: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .animate-sheet { animation: sheet-up 0.22s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .animate-fade { animation: fade-in 0.2s ease-out; }
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}
+
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .animate-sheet, .animate-fade { animation: none; }
+  .press { transition: none; }
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  .card { border-color: #cbd5e1; }
+}
