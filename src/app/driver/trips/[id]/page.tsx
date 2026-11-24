@@ -5,7 +5,7 @@ import { fmtDate } from '@/lib/format';
 import { loadTrip } from '@/lib/data/trip';
 import { TRIP_TONE } from '@/lib/status';
 import { Badge, PageHeader, SectionTitle } from '@/components/ui/core';
-import { CustomerCard, LoadingButton } from '@/components/trip/trip-office';
+import { CustomerCard, LoadingButton, TripLossButton, WeightLossCard } from '@/components/trip/trip-office';
 import { DriverTripActions } from '@/components/trip/driver-nav';
 
 export const dynamic = 'force-dynamic';
@@ -16,7 +16,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   const data = await loadTrip(ctx, id, locale);
   if (!data) notFound();
-  const { trip, customers, loadRows } = data;
+  const { trip, customers, loadRows, weight, tripSizes } = data;
   const running = ['LOADING', 'DISPATCHED', 'IN_PROGRESS'].includes(trip.status);
   return (
     <div className="space-y-6">
@@ -32,7 +32,11 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             </div>
           ))}
         </div>
-        {['ASSIGNED', 'LOADING', 'DISPATCHED'].includes(trip.status) && <LoadingButton tripId={trip.id} rows={loadRows} />}
+        {weight.loadedWeight ? <div className="mb-3"><WeightLossCard {...weight} /></div> : null}
+        <div className="space-y-2">
+          {['ASSIGNED', 'LOADING', 'DISPATCHED'].includes(trip.status) && <LoadingButton tripId={trip.id} rows={loadRows} totalWeight={trip.loaded_weight != null ? String(trip.loaded_weight) : null} />}
+          {(running || trip.status === 'COMPLETED') && <TripLossButton tripId={trip.id} sizes={tripSizes} />}
+        </div>
       </section>
       <DriverTripActions tripId={trip.id} status={trip.status} />
       <section className="space-y-3">

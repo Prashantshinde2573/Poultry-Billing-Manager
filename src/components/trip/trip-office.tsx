@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { PackagePlus, Pencil, Scale, Trash2, Truck, Wallet } from 'lucide-react';
+import { PackagePlus, Pencil, Scale, Skull, Trash2, Truck, Wallet } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/client';
 import { inr, num } from '@/lib/format';
 import { Avatar, Badge, Button } from '@/components/ui/core';
@@ -10,7 +10,7 @@ import { usePerm } from '@/components/shell/perm';
 import { Sheet } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
-import { allocateToTrip, recordLoading, recordStockLoss, removeAllocation, reopenTrip, setTripStatus, settleTrip, updateTrip } from '@/app/actions/ops';
+import { allocateToTrip, recordLoad, recordStockLoss, reportTripLoss, removeAllocation, reopenTrip, setTripStatus, settleTrip, updateTrip } from '@/app/actions/ops';
 import { DELIVERY_TONE } from '@/lib/status';
 import { CollectionForm, DeliveryForm, type DeliveryLine } from './delivery-form';
 
@@ -144,33 +144,92 @@ export function RemoveAllocation({ id }: { id: string }) {
 /* --------------------------------------------------------------- loading -- */
 export interface LoadRow { bird_size_id: string; size: string; allocated: number; loaded: number | null; loaded_weight: string | null }
 
-export function LoadingButton({ tripId, rows, label }: { tripId: string; rows: LoadRow[]; label?: string }) {
+export function LoadingButton({ tripId, rows, label, totalWeight }: { tripId: string; rows: LoadRow[]; label?: string; totalWeight?: string | null }) {
   const { t } = useI18n();
   const done = useDone();
   const [open, setOpen] = useState(false);
-  const [v, setV] = useState(() => rows.map((r) => ({ qty: String(r.loaded ?? r.allocated), w: r.loaded_weight ?? '' })));
+  const [v, setV] = useState(() => rows.map((r) => String(r.loaded ?? r.allocated)));
+  const [w, setW] = useState(totalWeight ?? '');
   const { pending, err, run } = useSubmit();
+  const birds = v.reduce((x, y) => x + Number(y || 0), 0);
   return (
     <>
       <Button variant="outline" size="lg" className="w-full" onClick={() => setOpen(true)}><Scale className="h-5 w-5" /> {label ?? t('t.recordLoading')}</Button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t('t.recordLoading')}
         footer={<><Button variant="outline" onClick={() => setOpen(false)}>{t('c.cancel')}</Button>
-          <Button disabled={pending} onClick={() => run(() => recordLoading(tripId, rows.map((r, i) => ({ bird_size_id: r.bird_size_id, loaded_qty: Number(v[i].qty || 0), loaded_weight: v[i].w }))),
+          <Button disabled={pending} onClick={() => run(() => recordLoad(tripId, rows.map((r, i) => ({ bird_size_id: r.bird_size_id, loaded_qty: Number(v[i] || 0) })), w),
             () => { setOpen(false); done(); })}>{t('c.save')}</Button></>}>
         <div className="space-y-3">
-          {rows.map((r, i) => (
-            <div key={r.bird_size_id} className="card p-4">
-              <p className="mb-2 flex justify-between font-semibold"><span>{r.size}</span><span className="text-sm font-normal text-ink-muted">{t('d.allocated')} {r.allocated}</span></p>
-              <div className="grid grid-cols-2 gap-2">
-                <TextInput label={t('t.loaded')} inputMode="numeric" value={v[i].qty} onChange={(e) => setV(v.map((x, j) => (j === i ? { ...x, qty: e.target.value.replace(/\D/g, '') } : x)))} />
-                <TextInput label={`${t('c.weight')} (${t('c.optional')})`} inputMode="decimal" suffix="kg" value={v[i].w} onChange={(e) => setV(v.map((x, j) => (j === i ? { ...x, w: e.target.value } : x)))} />
+          <div className="card divide-y divide-line px-4">
+            {rows.map((r, i) => (
+              <div key={r.bird_size_id} className="flex items-center gap-3 py-3">
+                <div className="min-w-0 flex-1"><p className="font-semibold">{r.size}</p><p className="text-sm text-ink-muted">{t('d.allocated')} {r.allocated}</p></div>
+                <input aria-label={`${r.size} ${t('c.birds')}`} inputMode="numeric" className="input tabular w-28 text-right text-[18px] font-semibold"
+                  value={v[i]} onChange={(e) => setV(v.map((x, j) => (j === i ? e.target.value.replace(/\D/g, '') : x)))} />
               </div>
-            </div>
-          ))}
+            ))}
+            <div className="flex justify-between py-3 text-[15px]"><span className="text-ink-muted">{t('t.totalBirds')}</span><span className="tabular font-semibold">{birds}</span></div>
+          </div>
+          <TextInput label={t('t.totalWeight')} inputMode="decimal" suffix="kg" value={w} onChange={(e) => setW(e.target.value.replace(/[^\d.]/g, ''))} />
           <ErrorBox msg={err} />
         </div>
       </Sheet>
     </>
+  );
+}
+
+/** Birds that died / got damaged on the road (driver or office, while the trip runs). */
+export function TripLossButton({ tripId, sizes }: { tripId: string; sizes: { id: string; name: string }[] }) {
+  const { t } = useI18n();
+  const done = useDone();
+  const [f, setF] = useState<{ size: string; qty: string; kind: 'DEATH' | 'DAMAGE'; note: string } | null>(null);
+  const { pending, err, run } = useSubmit();
+  if (!sizes.length) return null;
+  return (
+    <>
+      <Button variant="outline" size="lg" className="w-full border-bad/30 text-bad" onClick={() => setF({ size: sizes[0].id, qty: '', kind: 'DEATH', note: '' })}>
+        <Skull className="h-5 w-5" /> {t('t.deadBirds')}
+      </Button>
+      <Sheet open={!!f} onClose={() => setF(null)} title={t('t.deadBirds')}
+        footer={<><Button variant="outline" onClick={() => setF(null)}>{t('c.cancel')}</Button>
+          <Button variant="danger" disabled={pending || !f || !(Number(f.qty) > 0)}
+            onClick={() => f && run(() => reportTripLoss(tripId, f.size, Number(f.qty), f.kind, f.note), () => { setF(null); done(); })}>{t('c.save')}</Button></>}>
+        {f && (
+          <div className="space-y-3">
+            <Segmented value={f.kind} onChange={(k) => setF({ ...f, kind: k })} options={(['DEATH', 'DAMAGE'] as const).map((k) => ({ value: k, label: t(`s.loss.${k}`) }))} />
+            {sizes.length > 1 && <SelectInput label={t('c.size')} value={f.size} onChange={(e) => setF({ ...f, size: e.target.value })}>{sizes.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}</SelectInput>}
+            <TextInput label={t('c.birds')} inputMode="numeric" autoFocus value={f.qty} onChange={(e) => setF({ ...f, qty: e.target.value.replace(/\D/g, '') })} />
+            <TextInput label={`${t('c.notes')} (${t('c.optional')})`} value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />
+            <ErrorBox msg={err} />
+          </div>
+        )}
+      </Sheet>
+    </>
+  );
+}
+
+/** Load weight vs delivered weight: how much weight was lost on the road. */
+export function WeightLossCard({ loadedWeight, loadedBirds, deliveredWeight, deliveredBirds, lostBirds, returnedBirds }: {
+  loadedWeight: number | null; loadedBirds: number; deliveredWeight: number; deliveredBirds: number; lostBirds: number; returnedBirds: number;
+}) {
+  const { t } = useI18n();
+  if (!loadedWeight) return null;
+  const avg = loadedBirds > 0 ? loadedWeight / loadedBirds : 0;
+  const notDelivered = Math.max(loadedBirds - deliveredBirds - lostBirds - returnedBirds, 0);
+  // weight still in the vehicle or lost with dead/returned birds, estimated at the loading average
+  const away = (lostBirds + returnedBirds + notDelivered) * avg;
+  const shrink = Math.max(loadedWeight - deliveredWeight - away, 0);
+  const pct = loadedWeight > 0 ? (shrink / loadedWeight) * 100 : 0;
+  const box = (label: string, value: string, tone = '') => (
+    <div className="bg-white p-3"><p className="text-[13px] text-ink-muted">{label}</p><p className={`tabular text-[18px] font-semibold ${tone}`}>{value}</p></div>
+  );
+  return (
+    <div className="card grid grid-cols-2 gap-px overflow-hidden bg-line">
+      {box(t('t.loadWeight'), `${num(loadedWeight)} kg`)}
+      {box(t('t.deliveredWeight'), `${num(deliveredWeight)} kg`)}
+      {box(t('t.deadBirdsShort'), String(lostBirds), lostBirds ? 'text-bad' : '')}
+      {box(t('t.weightLoss'), deliveredBirds ? `${num(shrink)} kg · ${pct.toFixed(1)}%` : '—', shrink > 0 ? 'text-[#9A5E0B]' : '')}
+    </div>
   );
 }
 

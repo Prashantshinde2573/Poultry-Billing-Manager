@@ -717,6 +717,15 @@ export const en = {
   'add.trip': 'Start new trip',
   'c.slow': 'Slow internet. Trying again…',
   'set.license': 'Licence no. (optional)',
+  't.totalBirds': 'Total birds',
+  't.totalWeight': 'Total weight of the load',
+  't.deadBirds': 'Dead birds',
+  't.deadBirdsShort': 'Dead / damaged',
+  't.loadWeight': 'Loaded weight',
+  't.deliveredWeight': 'Delivered weight',
+  't.weightLoss': 'Weight loss on road',
+  't.weightCard': 'Weight',
+  'notif.TRIP_LOSS': '{trip}: {qty} {size} birds died ({by})',
 } as const;
 
 export type MessageKey = keyof typeof en;

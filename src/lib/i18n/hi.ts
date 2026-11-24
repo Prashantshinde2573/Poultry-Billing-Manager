@@ -698,4 +698,13 @@ export const hi: Messages = {
   'add.trip': 'नई ट्रिप शुरू करें',
   'c.slow': 'इंटरनेट धीमा है. फिर कोशिश…',
   'set.license': 'लाइसेंस नंबर (ज़रूरी नहीं)',
+  't.totalBirds': 'कुल पक्षी',
+  't.totalWeight': 'भरे माल का कुल वजन',
+  't.deadBirds': 'मरे हुए पक्षी',
+  't.deadBirdsShort': 'मरे / खराब',
+  't.loadWeight': 'भरते समय वजन',
+  't.deliveredWeight': 'दिया गया वजन',
+  't.weightLoss': 'रास्ते में वजन घटा',
+  't.weightCard': 'वजन',
+  'notif.TRIP_LOSS': '{trip}: {qty} {size} पक्षी मरे ({by})',
 };

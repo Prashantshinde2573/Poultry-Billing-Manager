@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Bell, CheckCircle2, Crown, MessageSquareText, Truck, Wallet, AlertTriangle, CreditCard } from 'lucide-react';
+import { Bell, CheckCircle2, Crown, MessageSquareText, Truck, Wallet, AlertTriangle, CreditCard, Skull } from 'lucide-react';
 import type { TFn } from '@/lib/i18n';
 import { fmtDate, fmtDateTime, inr, type Locale } from '@/lib/format';
 import type { Notice } from '@/lib/data/notifications';
@@ -15,6 +15,7 @@ const ICON: Record<string, { Icon: typeof Bell; cls: string }> = {
   LEAD_NEW: { Icon: MessageSquareText, cls: 'bg-aqua-soft text-aqua-deep' },
   RENEWAL_REQUEST: { Icon: Wallet, cls: 'bg-[#FCF3E0] text-[#9A5B05]' },
   PAYMENT_ONLINE: { Icon: CreditCard, cls: 'bg-[#E3F6EC] text-good' },
+  TRIP_LOSS: { Icon: Skull, cls: 'bg-[#FCEAE6] text-bad' },
 };
 
 export function noticeText(n: Notice, t: TFn, locale: Locale) {

@@ -28,7 +28,6 @@ export function OrderForm({ parties, sizes, initialParty = '', today }: { partie
   const { pending, err, setErr, run } = useSubmit();
   const used = new Set(lines.map((l) => l.bird_size_id));
   const upd = (k: number, p: Partial<Line>) => setLines((ls) => ls.map((l) => (l.k === k ? { ...l, ...p } : l)));
-  const pRate = parties.find((p) => p.id === party)?.rate;
 
   const submit = (draft: boolean) => {
     if (!party) return setErr(t('err.required') + ': ' + t('c.customer'));
@@ -45,24 +44,15 @@ export function OrderForm({ parties, sizes, initialParty = '', today }: { partie
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); submit(false); }}>
       <PartyPicker parties={parties} value={party} onChange={setParty} label={t('c.customer')} add={{ kind: 'CUSTOMER', as: 'customer' }} />
       <TextInput type="date" label={t('c.date')} value={date} onChange={(e) => setDate(e.target.value)} required />
-      {lines.map((l) => {
-        const s = sizes.find((x) => x.id === l.bird_size_id);
-        return (
-          <div key={l.k} className="card space-y-3 p-4">
-            <div className="flex items-end gap-2">
-              <SelectInput className="flex-1" label={t('c.size')} addNew={perm.owner ? { label: t('add.size'), to: '/app/settings?add=size' } : null} value={l.bird_size_id} onChange={(e) => upd(l.k, { bird_size_id: e.target.value })}>
-                {sizes.filter((x) => x.id === l.bird_size_id || !used.has(x.id)).map((x) => <option key={x.id} value={x.id}>{localName(x, locale)}</option>)}
-              </SelectInput>
-              {lines.length > 1 && <button type="button" aria-label={t('c.remove')} onClick={() => setLines((ls) => ls.filter((x) => x.k !== l.k))} className="press mb-1 rounded-full p-2.5 text-bad hover:bg-bad/10"><Trash2 className="h-5 w-5" /></button>}
-            </div>
-            <div className="grid grid-cols-3 gap-2">
-              <TextInput label={t('c.birds')} inputMode="numeric" value={l.qty} onChange={(e) => upd(l.k, { qty: e.target.value.replace(/\D/g, '') })} required />
-              <TextInput label={t('o.expectedWeight')} inputMode="decimal" value={l.expected_weight} onChange={(e) => upd(l.k, { expected_weight: e.target.value })} />
-              <TextInput label={t('c.ratePerKg')} inputMode="decimal" prefix="₹" placeholder={pRate ?? s?.rate ?? ''} value={l.rate} onChange={(e) => upd(l.k, { rate: e.target.value })} />
-            </div>
-          </div>
-        );
-      })}
+      {lines.map((l) => (
+        <div key={l.k} className="card flex items-end gap-2 p-4">
+          <SelectInput className="min-w-0 flex-1" label={t('c.size')} addNew={perm.owner ? { label: t('add.size'), to: '/app/settings?add=size' } : null} value={l.bird_size_id} onChange={(e) => upd(l.k, { bird_size_id: e.target.value })}>
+            {sizes.filter((x) => x.id === l.bird_size_id || !used.has(x.id)).map((x) => <option key={x.id} value={x.id}>{localName(x, locale)}</option>)}
+          </SelectInput>
+          <TextInput className="w-28" label={t('c.birds')} inputMode="numeric" value={l.qty} onChange={(e) => upd(l.k, { qty: e.target.value.replace(/\D/g, '') })} required />
+          {lines.length > 1 && <button type="button" aria-label={t('c.remove')} onClick={() => setLines((ls) => ls.filter((x) => x.k !== l.k))} className="press mb-1 rounded-full p-2.5 text-bad hover:bg-bad/10"><Trash2 className="h-5 w-5" /></button>}
+        </div>
+      ))}
       {lines.length < sizes.length && (
         <Button variant="outline" className="w-full" onClick={() => { const s = sizes.find((x) => !used.has(x.id)); if (s) setLines((ls) => [...ls, { k: Date.now(), bird_size_id: s.id, qty: '', expected_weight: '', rate: '' }]); }}>
           <Plus className="h-5 w-5" /> {t('c.addLine')}

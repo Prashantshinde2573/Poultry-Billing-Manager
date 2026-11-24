@@ -108,3 +108,25 @@ describe('online plan payment', () => {
     expect((await w.db.rpc('my_notifications')).items.some((x: any) => x.kind === 'PAYMENT_ONLINE')).toBe(true);
   });
 });
+
+describe('trip on the road', () => {
+  it('driver records total load weight and dead birds; owner is told; settlement counts them', async () => {
+    const trip = (await w.db.rpc('create_trip', { p_business_id: w.biz, p: { trip_date: new Date().toISOString().slice(0, 10), vehicle_id: w.vehicle, driver_id: w.driverId }, p_idempotency_key: `t-${Date.now()}` })).id;
+    await w.db.asUser(w.driverUser);
+    expect(await w.db.rpcError('report_trip_loss', { p_business_id: w.biz, p_trip_id: trip, p_bird_size_id: w.large, p_qty: 2 })).toMatch(/VALIDATION/);
+    await w.db.rpc('record_loading', { p_business_id: w.biz, p_trip_id: trip, p_entries: [{ bird_size_id: w.large, loaded_qty: 100 }] });
+    await w.db.rpc('set_trip_load_weight', { p_business_id: w.biz, p_trip_id: trip, p_weight: '215.5' });
+    await w.db.rpc('report_trip_loss', { p_business_id: w.biz, p_trip_id: trip, p_bird_size_id: w.large, p_qty: 3, p_kind: 'DEATH', p_note: null });
+    await w.db.asUser(w.otherDriverUser);
+    expect(await w.db.rpcError('report_trip_loss', { p_business_id: w.biz, p_trip_id: trip, p_bird_size_id: w.large, p_qty: 1 })).toMatch(/FORBIDDEN/);
+    expect(await w.db.rpcError('set_trip_load_weight', { p_business_id: w.biz, p_trip_id: trip, p_weight: '1' })).toMatch(/FORBIDDEN/);
+    await w.db.asUser(w.owner);
+    expect(Number((await w.db.one(`select loaded_weight from public.trips where id = $1`, [trip])).loaded_weight)).toBe(215.5);
+    const n = await w.db.rpc('my_notifications');
+    expect(n.items.find((x: any) => x.kind === 'TRIP_LOSS').params.qty).toBe(3);
+    const pv = await w.db.rpc('trip_settlement_preview', { p_business_id: w.biz, p_trip_id: trip });
+    expect(pv.sizes.find((s: any) => s.bird_size_id === w.large).losses_recorded).toBe(3);
+    const ws = await w.db.rpc('trip_weight_summary', { p_business_id: w.biz, p_trip_id: trip });
+    expect([Number(ws.loaded_weight), ws.loaded_birds, ws.lost_birds]).toEqual([215.5, 100, 3]);
+  });
+});

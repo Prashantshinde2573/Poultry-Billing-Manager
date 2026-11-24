@@ -10,15 +10,16 @@ import { one } from './queries';
 export async function loadTrip(ctx: Ctx, id: string, locale: Locale) {
   const supabase = await createClient();
   const { data: trip } = await supabase.from('trips')
-    .select('id, trip_no, trip_date, status, version, notes, driver_id, vehicle_id, drivers(name, phone), vehicles(registration_no, ownership)')
+    .select('id, trip_no, trip_date, status, version, notes, driver_id, vehicle_id, loaded_weight, drivers(name, phone), vehicles(registration_no, ownership)')
     .eq('id', id).eq('business_id', ctx.businessId).maybeSingle();
   if (!trip) return null;
-  const [{ data: allocs }, { data: loads }, { data: dels }, { data: pays }, { data: sizeRows }] = await Promise.all([
+  const [{ data: allocs }, { data: loads }, { data: dels }, { data: pays }, { data: sizeRows }, { data: ws }] = await Promise.all([
     supabase.from('trip_allocations').select('id, customer_id, bird_size_id, allocated_qty, rate, order_item_id, parties(name, phone), order_items(orders(order_no))').eq('trip_id', id),
     supabase.from('loading_entries').select('bird_size_id, loaded_qty, loaded_weight').eq('trip_id', id),
     supabase.from('deliveries').select('id, customer_id, status, reason, delivery_items(amount, delivered_qty, weight_kg, bird_size_id)').eq('trip_id', id),
     supabase.from('payments').select('party_id, amount, status').eq('trip_id', id).eq('direction', 'IN').in('status', ['PENDING_VERIFICATION', 'CONFIRMED']),
     supabase.from('bird_sizes').select('id, name, name_mr, name_hi, sort_order').eq('business_id', ctx.businessId).order('sort_order'),
+    supabase.rpc('trip_weight_summary', { p_business_id: ctx.businessId, p_trip_id: id }),
   ]);
   const sizes = sizeRows ?? [];
   const sizeName = (sid: string) => { const s = sizes.find((x) => x.id === sid); return s ? localName(s, locale) : '—'; };
@@ -60,6 +61,12 @@ export async function loadTrip(ctx: Ctx, id: string, locale: Locale) {
   return {
     trip: { ...trip, driver: one(trip.drivers as any) as { name: string; phone: string | null } | null, vehicle: one(trip.vehicles as any) as { registration_no: string; ownership: string } | null },
     customers, loadRows, sizes: sizes.map((s) => ({ id: s.id, name: localName(s, locale) })),
+    tripSizes: loadRows.map((r) => ({ id: r.bird_size_id, name: r.size })),
+    weight: {
+      loadedWeight: ws?.loaded_weight != null ? Number(ws.loaded_weight) : null, loadedBirds: Number(ws?.loaded_birds ?? 0),
+      deliveredWeight: Number(ws?.delivered_weight ?? 0), deliveredBirds: Number(ws?.delivered_birds ?? 0),
+      lostBirds: Number(ws?.lost_birds ?? 0), returnedBirds: Number(ws?.returned_birds ?? 0),
+    },
     totals: {
       birds: [...allocBySize.values()].reduce((a, b) => a + b, 0),
       delivered: customers.filter((c) => c.delivery).length,

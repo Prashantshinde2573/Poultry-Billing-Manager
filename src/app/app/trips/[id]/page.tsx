@@ -10,7 +10,7 @@ import { fleet, one, rpc } from '@/lib/data/queries';
 import { loadTrip } from '@/lib/data/trip';
 import { TRIP_TONE } from '@/lib/status';
 import { Badge, PageHeader, SectionTitle, Empty, btnClass } from '@/components/ui/core';
-import { AllocateButton, CustomerCard, LoadingButton, RemoveAllocation, ReopenTrip, SettlementPanel, TripEditButton, TripStatusButtons, type OpenLine } from '@/components/trip/trip-office';
+import { AllocateButton, CustomerCard, LoadingButton, TripLossButton, WeightLossCard, RemoveAllocation, ReopenTrip, SettlementPanel, TripEditButton, TripStatusButtons, type OpenLine } from '@/components/trip/trip-office';
 
 export const dynamic = 'force-dynamic';
 const PRE = ['DRAFT', 'ASSIGNED', 'LOADING'];
@@ -22,7 +22,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   const { id } = await params;
   const data = await loadTrip(ctx, id, locale);
   if (!data) notFound();
-  const { trip, customers, loadRows, sizes, totals } = data;
+  const { trip, customers, loadRows, sizes, totals, weight, tripSizes } = data;
   const supabase = await createClient();
   const pre = PRE.includes(trip.status);
 
@@ -105,11 +105,15 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
               <div key={r.bird_size_id} className="bg-white p-3">
                 <p className="text-sm text-ink-muted">{r.size}</p>
                 <p className="tabular text-lg font-semibold">{r.loaded ?? '—'} <span className="text-sm font-normal text-ink-muted">/ {r.allocated}</span></p>
-                {r.loaded_weight && <p className="text-xs text-ink-muted">{r.loaded_weight} kg</p>}
+                
               </div>
             ))}
           </div>
-          {['ASSIGNED', 'LOADING', 'DISPATCHED'].includes(trip.status) && <LoadingButton tripId={trip.id} rows={loadRows} />}
+          {weight.loadedWeight ? <div className="mb-3"><WeightLossCard {...weight} /></div> : null}
+          <div className="space-y-2">
+            {['ASSIGNED', 'LOADING', 'DISPATCHED'].includes(trip.status) && <LoadingButton tripId={trip.id} rows={loadRows} totalWeight={trip.loaded_weight != null ? String(trip.loaded_weight) : null} />}
+            {[...RUNNING, 'COMPLETED'].includes(trip.status) && <TripLossButton tripId={trip.id} sizes={tripSizes} />}
+          </div>
         </section>
       )}
 

@@ -45,6 +45,21 @@ export async function recordLoading(tripId: string, entries: { bird_size_id: str
   return call('record_loading', { p_trip_id: zId.parse(tripId), p_entries: v.data });
 }
 
+/** Birds per size + one total weight for the whole load. */
+export async function recordLoad(tripId: string, entries: { bird_size_id: string; loaded_qty: number }[], totalWeight: string) {
+  const w = z.union([zKg, z.literal('')]).safeParse(totalWeight.trim());
+  if (!w.success) return { ok: false as const, code: 'VALIDATION', detail: 'weight' };
+  const r = await recordLoading(tripId, entries);
+  if (!r.ok) return r;
+  return call('set_trip_load_weight', { p_trip_id: zId.parse(tripId), p_weight: w.data === '' ? null : w.data });
+}
+
+/** Dead / damaged birds reported during the trip (driver or office). */
+export async function reportTripLoss(tripId: string, sizeId: string, qty: number, kind: 'DEATH' | 'DAMAGE', note: string) {
+  if (!Number.isInteger(qty) || qty < 1 || qty > 100000) return { ok: false as const, code: 'VALIDATION', detail: 'birds' };
+  return call('report_trip_loss', { p_trip_id: zId.parse(tripId), p_bird_size_id: zId.parse(sizeId), p_qty: qty, p_kind: kind, p_note: note.slice(0, 300) });
+}
+
 export async function setTripStatus(tripId: string, status: string) {
   return call('set_trip_status', { p_trip_id: zId.parse(tripId), p_status: status });
 }

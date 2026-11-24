@@ -698,4 +698,13 @@ export const mr: Messages = {
   'add.trip': 'नवीन ट्रिप सुरू करा',
   'c.slow': 'इंटरनेट हळू आहे. पुन्हा प्रयत्न…',
   'set.license': 'लायसन्स नंबर (गरज असल्यास)',
+  't.totalBirds': 'एकूण पक्षी',
+  't.totalWeight': 'भरलेल्या मालाचे एकूण वजन',
+  't.deadBirds': 'मेलेले पक्षी',
+  't.deadBirdsShort': 'मेलेले / खराब',
+  't.loadWeight': 'भरताना वजन',
+  't.deliveredWeight': 'दिलेले वजन',
+  't.weightLoss': 'रस्त्यात वजन घट',
+  't.weightCard': 'वजन',
+  'notif.TRIP_LOSS': '{trip}: {qty} {size} पक्षी मेले ({by})',
 };
