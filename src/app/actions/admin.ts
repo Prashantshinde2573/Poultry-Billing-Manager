@@ -1,6 +1,6 @@
 'use server';
 import { randomInt } from 'node:crypto';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { z } from 'zod';
 import { createClient, createServiceClient } from '@/lib/supabase/server';
 import { getCtx } from '@/lib/session';
@@ -15,6 +15,7 @@ async function adminRpc<T = any>(fn: string, args: Record<string, unknown>): Pro
   const { data, error } = await supabase.rpc(fn, args);
   if (error) return fromDbError(error);
   revalidatePath('/admin', 'layout');
+  revalidateTag('platform');
   return { ok: true, data: data as T };
 }
 
@@ -68,6 +69,7 @@ export async function adminCreateBusiness(input: z.input<typeof createSchema>): 
     return fromDbError(error);
   }
   revalidatePath('/admin', 'layout');
+  revalidateTag('platform');
   return { ok: true, data: { id: (data as any).id, login: mobile ? mobile.slice(2) : email, password } };
 }
 

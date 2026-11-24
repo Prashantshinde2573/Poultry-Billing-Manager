@@ -12,7 +12,7 @@ export function DriverNav() {
   const { t } = useI18n();
   const path = usePathname();
   const tab = (href: string, label: string, Icon: typeof Truck, active: boolean) => (
-    <Link href={href} className={`press flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium ${active ? 'text-ink' : 'text-ink-faint'}`}>
+    <Link href={href} prefetch className={`press flex flex-1 flex-col items-center gap-1 py-2.5 text-xs font-medium ${active ? 'text-ink' : 'text-ink-faint'}`}>
       <Icon className="h-6 w-6" strokeWidth={active ? 2.4 : 1.9} />{label}
     </Link>
   );

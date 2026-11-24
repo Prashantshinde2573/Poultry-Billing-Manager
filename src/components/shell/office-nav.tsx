@@ -63,7 +63,7 @@ export function BottomNav({ newItems, showTrips }: { newItems: NavItem[]; showTr
   const tab = (href: string, label: string, Icon: typeof Home) => {
     const active = isActive(path, href);
     return (
-      <Link href={href} aria-current={active ? 'page' : undefined}
+      <Link href={href} prefetch aria-current={active ? 'page' : undefined}
         className={`press flex h-full flex-1 flex-col items-center justify-center gap-1 text-[11.5px] font-medium ${active ? 'text-ink' : 'text-ink-faint'}`}>
         <Icon className="h-[22px] w-[22px]" strokeWidth={active ? 2.3 : 1.8} />
         <span className="max-w-full truncate px-1">{label}</span>

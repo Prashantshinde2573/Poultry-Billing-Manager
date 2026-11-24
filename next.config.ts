@@ -11,7 +11,7 @@ const config: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   // keep screens you just visited for 30s so going back is instant (saving anything clears it)
-  experimental: { staleTimes: { dynamic: 30, static: 300 } },
+  experimental: { staleTimes: { dynamic: 30, static: 60 } },
   async headers() {
     return [
       { source: '/:path*', headers: securityHeaders },
