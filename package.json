@@ -1,0 +1,42 @@
+{
+  "name": "poulgo",
+  "version": "2.0.0",
+  "private": true,
+  "description": "PoulGo \u2014 Poultry Business Manager 2.0: orders, trips, drivers, deliveries, customer & supplier accounts, WhatsApp summaries, profit & loss.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:db": "vitest run tests/db",
+    "test:unit": "vitest run tests/unit"
+  },
+  "dependencies": {
+    "@fontsource/noto-sans-devanagari": "5.2.6",
+    "@fontsource/outfit": "5.2.6",
+    "@supabase/ssr": "0.12.7",
+    "@supabase/supabase-js": "2.119.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.9",
+    "lucide-react": "0.460.0",
+    "next": "15.5.29",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.2.17",
+    "@types/node": "22.10.2",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.5.33",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.6.3",
+    "vitest": "4.1.12"
+  },
+  "overrides": {
+    "postcss": "8.5.33"
+  }
+}
