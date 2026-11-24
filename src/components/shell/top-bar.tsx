@@ -49,8 +49,8 @@ export function TopBar({ businessName, userName, roleLabel, planLabel, planNote,
           </Link>
           <div className="hidden flex-1 lg:block" />
           {ask && (
-            <Link href="/app/ask" aria-label={t('nav.ask')} className="press flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-ink px-3.5 text-[14px] font-semibold text-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/brand/ai-orb.webp" alt="" width={24} height={24} className="h-6 w-6 rounded-full" /> <span className="hidden min-[420px]:inline">{t('nav.ask')}</span>
+            <Link href="/app/ask" aria-label={t('nav.ask')} className="press flex h-11 shrink-0 items-center gap-1.5 rounded-full border border-line bg-white px-2.5 text-[14px] font-semibold text-ink min-[420px]:pr-3.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/brand/ai-orb.webp" alt="" width={30} height={30} className="h-[30px] w-[30px]" /> <span className="hidden min-[420px]:inline">{t('nav.ask')}</span>
             </Link>
           )}
           <Link href={notificationsHref} aria-label={unread ? `${t('nav.notifications')} (${unread})` : t('nav.notifications')}

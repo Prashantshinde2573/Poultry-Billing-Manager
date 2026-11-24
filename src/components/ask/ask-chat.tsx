@@ -82,7 +82,7 @@ export function AskChat({ used: used0, limit, initial }: { used: number; limit: 
       <div className="flex-1 space-y-3 pb-4">
         {turns.length === 0 && (
           <div className="pt-6 text-center">
-            <div className="flex justify-center"><span className="rounded-full bg-ink p-2.5"><AiOrb size={84} /></span></div>
+            <div className="flex justify-center"><AiOrb size={104} /></div>
             <h2 className="mt-3 text-[21px] font-semibold">{t('ask.title')}</h2>
             <div className="mt-5 grid gap-2 text-left">
               {examples.map((e) => (
@@ -93,7 +93,7 @@ export function AskChat({ used: used0, limit, initial }: { used: number; limit: 
         )}
         {turns.map((m, i) => (
           <div key={i} className={`flex items-end gap-2 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {m.role === 'assistant' && <span className="mb-1 rounded-full bg-ink p-0.5"><AiOrb size={26} /></span>}
+            {m.role === 'assistant' && <AiOrb size={30} className="mb-1" />}
             <div className={`max-w-[84%] rounded-[20px] px-4 py-3 text-[15.5px] leading-relaxed [overflow-wrap:anywhere] ${m.role === 'user' ? 'rounded-br-[6px] bg-ink text-white' : 'card rounded-bl-[6px]'}`}>
               {m.role === 'user' ? m.text : <Rich text={m.text} />}
             </div>
@@ -101,7 +101,7 @@ export function AskChat({ used: used0, limit, initial }: { used: number; limit: 
         ))}
         {busy && (
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-ink p-0.5"><AiOrb size={26} /></span>
+            <AiOrb size={30} />
             <span className="card rounded-bl-[6px] px-4 py-2.5 text-[14.5px] text-ink-muted">{t('ask.thinking')}</span>
           </div>
         )}
