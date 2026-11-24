@@ -43,14 +43,19 @@ const PERM_MODULE: Partial<Record<Perm, Module>> = { suppliers: 'suppliers', exp
 /** The signed-in user's account (membership + plan). Cached per request. */
 export const getCtx = cache(async (): Promise<Ctx | null> => {
   const supabase = await createClient();
-  // getClaims verifies the session JWT locally (signing keys are cached), so a page
-  // needs no extra round trip to the auth server; my_account then loads everything else.
-  const { data: cl } = await supabase.auth.getClaims();
-  const c = cl?.claims as { sub?: string; email?: string; user_metadata?: Record<string, unknown> } | undefined;
-  if (!c?.sub) return null;
-  const user = { id: c.sub, email: c.email ?? null, user_metadata: (c.user_metadata ?? {}) as Record<string, any> };
-  const { data: a } = await supabase.rpc('my_account');
-  const acc = (a ?? {}) as any;
+  // One round trip: PostgREST verifies the session JWT and my_account returns the verified
+  // user id with everything else (no separate JWT/JWKS check, which cost a network call on cold starts).
+  const { data: a, error } = await supabase.rpc('my_account');
+  const acc = (a ?? null) as any;
+  if (error || !acc) return null;
+  if (!acc.uid) {
+    // database not updated yet (older my_account without uid): verify the JWT here instead
+    const { data: cl } = await supabase.auth.getClaims();
+    const sub = (cl?.claims as { sub?: string; email?: string } | undefined);
+    if (!sub?.sub) return null;
+    acc.uid = sub.sub; acc.email = sub.email ?? null;
+  }
+  const user = { id: acc.uid as string, email: (acc.email ?? null) as string | null, user_metadata: {} as Record<string, any> };
   const base = {
     userId: user.id, email: user.email, superAdmin: !!acc.super_admin,
     mustChangePassword: !!acc.must_change_password, // from auth.users (fresh), not the JWT (stale until refresh)

@@ -13,13 +13,14 @@ export async function loadTrip(ctx: Ctx, id: string, locale: Locale) {
     .select('id, trip_no, trip_date, status, version, notes, driver_id, vehicle_id, loaded_weight, drivers(name, phone), vehicles(registration_no, ownership)')
     .eq('id', id).eq('business_id', ctx.businessId).maybeSingle();
   if (!trip) return null;
-  const [{ data: allocs }, { data: loads }, { data: dels }, { data: pays }, { data: sizeRows }, { data: ws }] = await Promise.all([
+  const [{ data: allocs }, { data: loads }, { data: dels }, { data: pays }, { data: sizeRows }, { data: ws }, { data: bal }] = await Promise.all([
     supabase.from('trip_allocations').select('id, customer_id, bird_size_id, allocated_qty, rate, order_item_id, parties(name, phone), order_items(orders(order_no))').eq('trip_id', id),
     supabase.from('loading_entries').select('bird_size_id, loaded_qty, loaded_weight').eq('trip_id', id),
     supabase.from('deliveries').select('id, customer_id, status, reason, delivery_items(amount, delivered_qty, weight_kg, bird_size_id)').eq('trip_id', id),
     supabase.from('payments').select('party_id, amount, status').eq('trip_id', id).eq('direction', 'IN').in('status', ['PENDING_VERIFICATION', 'CONFIRMED']),
     supabase.from('bird_sizes').select('id, name, name_mr, name_hi, sort_order').eq('business_id', ctx.businessId).order('sort_order'),
     supabase.rpc('trip_weight_summary', { p_business_id: ctx.businessId, p_trip_id: id }),
+    supabase.rpc('trip_customer_balances', { p_business_id: ctx.businessId, p_trip_id: id }),
   ]);
   const sizes = sizeRows ?? [];
   const sizeName = (sid: string) => { const s = sizes.find((x) => x.id === sid); return s ? localName(s, locale) : '—'; };
@@ -30,7 +31,7 @@ export async function loadTrip(ctx: Ctx, id: string, locale: Locale) {
     const p = one(a.parties as any) as { name: string; phone: string | null } | null;
     let c = custMap.get(a.customer_id);
     if (!c) {
-      c = { id: a.customer_id, name: p?.name ?? '—', phone: p?.phone ?? null, lines: [], delivery: null, bill: null, collected: 0, pending: 0, allocIds: [] };
+      c = { id: a.customer_id, name: p?.name ?? '—', phone: p?.phone ?? null, balance: 0, lines: [], delivery: null, bill: null, collected: 0, pending: 0, allocIds: [] };
       custMap.set(a.customer_id, c);
     }
     c.lines.push({ allocation_id: a.id, size: sizeName(a.bird_size_id), allocated_qty: a.allocated_qty, rate: String(a.rate) });
@@ -57,6 +58,7 @@ export async function loadTrip(ctx: Ctx, id: string, locale: Locale) {
     return { bird_size_id: sid, size: sizeName(sid), allocated: allocBySize.get(sid) ?? 0, loaded: l?.loaded_qty ?? null, loaded_weight: l?.loaded_weight != null ? String(l.loaded_weight) : null };
   });
 
+  for (const c of custMap.values()) c.balance = Number((bal as Record<string, number> | null)?.[c.id] ?? 0);
   const customers = [...custMap.values()].sort((a, b) => Number(!!a.delivery) - Number(!!b.delivery) || a.name.localeCompare(b.name));
   return {
     trip: { ...trip, driver: one(trip.drivers as any) as { name: string; phone: string | null } | null, vehicle: one(trip.vehicles as any) as { registration_no: string; ownership: string } | null },

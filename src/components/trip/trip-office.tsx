@@ -32,13 +32,14 @@ export function TripStatusButtons({ tripId, status }: { tripId: string; status: 
   const { t } = useI18n();
   const done = useDone();
   const { pending, err, run } = useSubmit();
-  const next = (NEXT[status] ?? []).filter((s) => s !== 'LOADING');
+  // keep it to what people actually do: confirm a draft, finish the trip (dispatch/start happen by themselves)
+  const next = (NEXT[status] ?? []).filter((s) => !['LOADING', 'DISPATCHED', 'IN_PROGRESS', 'CANCELLED'].includes(s));
   if (!next.length) return null;
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap gap-2">
         {next.map((s) => (
-          <Button key={s} variant={s === 'CANCELLED' ? 'outline' : 'ink'} disabled={pending} onClick={() => run(() => setTripStatus(tripId, s), done)}>
+          <Button key={s} size="lg" className="flex-1" variant={s === 'CANCELLED' ? 'outline' : 'ink'} disabled={pending} onClick={() => run(() => setTripStatus(tripId, s), done)}>
             {s === 'DISPATCHED' || s === 'IN_PROGRESS' ? <Truck className="h-5 w-5" /> : null}{t(LABEL[s] as any)}
           </Button>
         ))}
@@ -94,7 +95,7 @@ export function AllocateButton({ tripId, lines, canOverride }: { tripId: string;
   const chosen = Object.entries(sel).filter(([, v]) => v.on && Number(v.qty) > 0);
   return (
     <>
-      <Button variant="outline" onClick={() => setOpen(true)}><PackagePlus className="h-5 w-5" /> {t('t.addOrders')}</Button>
+      <Button variant="outline" className="w-full" onClick={() => setOpen(true)}><PackagePlus className="h-5 w-5" /> {t('day.oldOrders')}</Button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t('t.openOrders')}
         footer={<><Button variant="outline" onClick={() => setOpen(false)}>{t('c.cancel')}</Button>
           <Button disabled={pending || !chosen.length} onClick={() => run(
@@ -154,7 +155,7 @@ export function LoadingButton({ tripId, rows, label, totalWeight }: { tripId: st
   const birds = v.reduce((x, y) => x + Number(y || 0), 0);
   return (
     <>
-      <Button variant="outline" size="lg" className="w-full" onClick={() => setOpen(true)}><Scale className="h-5 w-5" /> {label ?? t('t.recordLoading')}</Button>
+      <Button variant="outline" size="lg" className="w-full" onClick={() => { setV(rows.map((r) => String(r.loaded ?? r.allocated))); setW(totalWeight ?? ''); setOpen(true); }}><Scale className="h-5 w-5" /> {label ?? t('t.recordLoading')}</Button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t('t.recordLoading')}
         footer={<><Button variant="outline" onClick={() => setOpen(false)}>{t('c.cancel')}</Button>
           <Button disabled={pending} onClick={() => run(() => recordLoad(tripId, rows.map((r, i) => ({ bird_size_id: r.bird_size_id, loaded_qty: Number(v[i] || 0) })), w),
@@ -235,7 +236,7 @@ export function WeightLossCard({ loadedWeight, loadedBirds, deliveredWeight, del
 
 /* ------------------------------------------------------ customer delivery -- */
 export interface TripCustomer {
-  id: string; name: string; phone: string | null; lines: DeliveryLine[];
+  id: string; name: string; phone: string | null; balance: number; lines: DeliveryLine[];
   delivery: { status: string; reason: string | null } | null; bill: string | null; collected: number; pending: number;
 }
 
@@ -267,7 +268,7 @@ export function CustomerCard({ tripId, c, canDeliver, canCollect, canOverride, s
         {c.delivery && canCollect && <Button variant="outline" className="flex-1" onClick={() => setMode('collect')}><Wallet className="h-5 w-5" /> {t('d.collectLater')}</Button>}
       </div>
       <Sheet open={mode !== null} onClose={() => setMode(null)} title={`${mode === 'collect' ? t('d.collectLater') : t('d.record')} · ${c.name}`}>
-        {mode === 'deliver' && <DeliveryForm tripId={tripId} customer={{ id: c.id, name: c.name }} lines={c.lines} canOverride={canOverride} onDone={() => setMode(null)} />}
+        {mode === 'deliver' && <DeliveryForm tripId={tripId} customer={{ id: c.id, name: c.name, phone: c.phone, balance: c.balance }} lines={c.lines} canOverride={canOverride} onDone={() => setMode(null)} />}
         {mode === 'collect' && <CollectionForm tripId={tripId} customerId={c.id} onDone={() => setMode(null)} />}
       </Sheet>
     </div>

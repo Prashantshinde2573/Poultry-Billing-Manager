@@ -130,3 +130,16 @@ describe('trip on the road', () => {
     expect([Number(ws.loaded_weight), ws.loaded_birds, ws.lost_birds]).toEqual([215.5, 100, 3]);
   });
 });
+
+describe('order straight onto a trip', () => {
+  it('creates the order and loads it on the trip in one step', async () => {
+    const trip = (await w.db.rpc('create_trip', { p_business_id: w.biz, p: { trip_date: new Date().toISOString().slice(0, 10), vehicle_id: w.vehicle, driver_id: w.driverId }, p_idempotency_key: `t2-${Date.now()}` })).id;
+    const c = await customer(w, 'Gaurav Chicken');
+    await w.db.rpc('trip_add_order', { p_business_id: w.biz, p_trip_id: trip, p_customer_id: c, p_items: [{ bird_size_id: w.large, qty: 40 }, { bird_size_id: w.small, qty: 0 }], p_idempotency_key: `o-${Date.now()}` });
+    const al = await w.db.rows(`select bird_size_id, allocated_qty from public.trip_allocations where trip_id = $1`, [trip]);
+    expect(al).toHaveLength(1);
+    expect(al[0].allocated_qty).toBe(40);
+    const acc = await w.db.rpc('my_account');
+    expect(acc.uid).toBe(w.owner);
+  });
+});

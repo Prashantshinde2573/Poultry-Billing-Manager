@@ -11,21 +11,65 @@ import { NEW_ENTRY, allowed } from '@/components/shell/nav-items';
 
 export const dynamic = 'force-dynamic';
 
+/** Which step of the day a trip is at (1 vehicle · 2 orders · 3 farms · 4 load · 5 deliver · 6 accounts). */
+function nextStep(tr: { status: string; customers: number; delivered: number }) {
+  if (tr.status === 'DRAFT') return 1;
+  if (!tr.customers) return 2;
+  if (tr.status === 'ASSIGNED') return 3;
+  if (tr.delivered < tr.customers && ['LOADING', 'DISPATCHED', 'IN_PROGRESS'].includes(tr.status)) return 5;
+  if (tr.status === 'SETTLED') return 7;
+  return 6;
+}
+
 export default async function Dashboard() {
   const ctx = await requireCtx({ office: true });
   const { t, locale } = await getT();
-  const [d, customers, recent] = await Promise.all([rpc<any>('get_dashboard', ctx), listParties(ctx, 'CUSTOMER'), recentLedger(ctx, 8)]);
+  const [d, customers] = await Promise.all([rpc<any>('get_dashboard', ctx), listParties(ctx, 'CUSTOMER')]);
   const pending = d.pending_verification as { count: number; amount: string };
   const people = customers
     .filter((c) => c.status === 'ACTIVE' && Number(c.receivable) > 0)
     .sort((a, b) => Number(b.receivable) - Number(a.receivable))
     .slice(0, 10);
-  const quick = allowed(NEW_ENTRY, ctx.role, ctx.perms, ctx.plan.modules).slice(0, 8);
   const trips = ctx.has('trips');
   const card = 'press relative flex h-[184px] w-[82%] max-w-[340px] shrink-0 snap-start flex-col justify-between rounded-[24px] p-5 text-white shadow-lift sm:w-[340px]';
 
   return (
     <div className="space-y-7">
+      {/* today's vehicles: the day's work starts here */}
+      {trips && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-[19px] font-semibold">{t('day.today')}</h2>
+            {(d.active_trips as any[]).length > 0 && <Link href="/app/trips/new" className="press rounded-full px-3 py-1.5 text-[15px] font-semibold text-aqua-deep">+ {t('day.another')}</Link>}
+          </div>
+          {(d.active_trips as any[]).length === 0 ? (
+            <Link href="/app/trips/new" className="press flex items-center gap-4 rounded-[22px] bg-ink p-5 text-white shadow-lift">
+              <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[18px] bg-white/10"><Truck className="h-7 w-7" /></span>
+              <span className="flex-1 text-[19px] font-semibold">{t('day.newVehicle')}</span>
+              <ChevronRight className="h-6 w-6" />
+            </Link>
+          ) : (d.active_trips as any[]).map((tr) => {
+            const step = nextStep(tr);
+            return (
+              <Link key={tr.id} href={`/app/trips/${tr.id}`} className="card press block p-4">
+                <div className="flex items-center gap-3">
+                  <IconBubble tone="ink"><Truck className="h-5 w-5" /></IconBubble>
+                  <div className="min-w-0 flex-1">
+                    <p className="break-words text-[17px] font-semibold">{tr.vehicle ?? tr.trip_no}</p>
+                    <p className="break-words text-[14px] text-ink-muted">{tr.driver ?? '—'}{tr.customers ? ` · ${tr.delivered}/${tr.customers}` : ''}</p>
+                  </div>
+                  <ChevronRight className="h-5 w-5 shrink-0 text-ink-faint" />
+                </div>
+                <div className="mt-3 flex gap-1.5" aria-hidden="true">
+                  {[1, 2, 3, 4, 5, 6].map((n) => <span key={n} className={`h-1.5 flex-1 rounded-full ${n < step ? 'bg-good' : n === step ? 'bg-aqua' : 'bg-ink/[0.08]'}`} />)}
+                </div>
+                <p className="mt-2 text-[15px] font-medium text-aqua-deep">{step > 6 ? t('day.allDone') : t('day.next', { step: t(`day.s${step}` as any) })}</p>
+              </Link>
+            );
+          })}
+        </section>
+      )}
+
 
       <div className="space-y-7 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8 lg:space-y-0">
         <div className="min-w-0 space-y-7">
@@ -73,21 +117,6 @@ export default async function Dashboard() {
             </Link>
           )}
 
-          {/* quick actions */}
-          <section className="card px-2 py-4">
-            <div className="grid grid-cols-4 gap-y-4">
-              {quick.map((q) => {
-                const Icon = ICONS[q.icon];
-                return (
-                  <Link key={q.href} href={q.href} className="press flex flex-col items-center gap-1.5 px-1 text-center">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-[16px] bg-mint text-ink"><Icon className="h-[22px] w-[22px]" /></span>
-                    <span className="line-clamp-2 text-[12.5px] font-medium leading-tight">{t(q.key)}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          </section>
-
           {/* customers with dues (reference: avatar row) */}
           {people.length > 0 && (
             <section>
@@ -118,79 +147,6 @@ export default async function Dashboard() {
         </div>
 
         <div className="min-w-0 space-y-7">
-          {/* birds by size */}
-          {(ctx.has('orders') || ctx.has('trips')) && (
-            <section className="card overflow-hidden">
-              <p className="px-4 pb-1 pt-4 text-[16px] font-semibold">{t('dash.birdsToday')}</p>
-              <table className="tabular w-full text-[14.5px]">
-                <thead><tr className="text-left text-[12px] text-ink-muted">
-                  <th className="px-4 py-2 font-medium">{t('c.size')}</th><th className="px-1.5 py-2 text-right font-medium">{t('dash.ordered')}</th>
-                  <th className="px-1.5 py-2 text-right font-medium">{t('dash.loaded')}</th><th className="px-1.5 py-2 text-right font-medium">{t('dash.delivered')}</th>
-                  <th className="px-4 py-2 text-right font-medium">{t('dash.remaining')}</th>
-                </tr></thead>
-                <tbody>
-                  {(d.sizes as any[]).map((s) => (
-                    <tr key={s.bird_size_id} className="border-t border-line">
-                      <td className="px-4 py-2.5 font-medium">{localName(s, locale)}</td>
-                      <td className="px-1.5 py-2.5 text-right">{num(s.ordered)}</td>
-                      <td className="px-1.5 py-2.5 text-right">{num(s.loaded)}</td>
-                      <td className="px-1.5 py-2.5 text-right text-good">{num(s.delivered)}</td>
-                      <td className="px-4 py-2.5 text-right font-semibold">{num(s.remaining)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          )}
-
-          {/* trips */}
-          {trips && (
-            <section>
-              <SectionTitle action={<Link href="/app/trips">{t('c.viewAll')}</Link>}>{t('dash.activeTrips')}</SectionTitle>
-              {(d.active_trips as any[]).length === 0 ? <p className="card px-4 py-5 text-[14px] text-ink-muted">{t('dash.noTrips')}</p> : (
-                <div className="space-y-2.5">
-                  {(d.active_trips as any[]).map((tr) => (
-                    <Link key={tr.id} href={`/app/trips/${tr.id}`} className="card press flex items-center gap-3 p-4">
-                      <IconBubble tone="ink"><Truck className="h-5 w-5" /></IconBubble>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2"><p className="break-words font-medium">{tr.trip_no} · {tr.driver ?? '—'}</p><span className="tabular shrink-0 text-[13px] text-ink-muted">{tr.delivered}/{tr.customers}</span></div>
-                        <p className="break-words text-[13px] text-ink-muted">{tr.vehicle ?? ''} · {t(`t.s.${tr.status}` as any)}</p>
-                        <div className="mt-2 h-1.5 rounded-full bg-ink/[0.07]"><div className="h-1.5 rounded-full bg-aqua" style={{ width: `${tr.customers ? (tr.delivered / tr.customers) * 100 : 0}%` }} /></div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-              {(d.pending_deliveries > 0 || d.unsettled_trips > 0) && (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {d.pending_deliveries > 0 && <Badge tone="warn">{t('dash.pendingDeliveries')}: {d.pending_deliveries}</Badge>}
-                  {d.unsettled_trips > 0 && <Badge tone="slate">{t('dash.unsettledTrips')}: {d.unsettled_trips}</Badge>}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* recent activity (reference: transactions list) */}
-          {recent.length > 0 && (
-            <section>
-              <SectionTitle action={<Link href="/app/payments">{t('c.viewAll')}</Link>}>{t('c.recent')}</SectionTitle>
-              <div className="card divide-y divide-line px-4">
-                {recent.map((r) => {
-                  const payment = r.entry_type === 'PAYMENT';
-                  const amount = Number(r.debit) || Number(r.credit);
-                  return (
-                    <Row key={r.id} href={`/app/${r.ledger === 'RECEIVABLE' ? 'customers' : 'suppliers'}/${r.party_id}`}
-                      left={payment ? <IconBubble tone={r.ledger === 'RECEIVABLE' ? 'good' : 'violet'}>{r.ledger === 'RECEIVABLE' ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}</IconBubble>
-                        : <IconBubble tone="aqua"><ReceiptText className="h-5 w-5" /></IconBubble>}
-                      title={r.party_name}
-                      sub={`${t(`l.${r.entry_type}` as any)} · ${fmtDate(r.txn_date, locale, false)}`}
-                      amount={`${payment && r.ledger === 'RECEIVABLE' ? '+' : ''}${inrSmart(amount)}`}
-                      tone={payment && r.ledger === 'RECEIVABLE' ? 'good' : undefined} />
-                  );
-                })}
-              </div>
-            </section>
-          )}
         </div>
       </div>
     </div>

@@ -20,9 +20,9 @@ interface Line { k: number; bird_size_id: string; qty: string; weight_kg: string
  * Multi-line size entry used for a counter bill (sale) and a supplier purchase.
  * The amount shown is computed with the same rounding the database uses.
  */
-export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', today, canOverride }: {
+export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', initialTrip = '', back, today, canOverride }: {
   kind: 'BILL' | 'PURCHASE'; parties: PartyOpt[]; sizes: SizeOpt[]; trips?: { id: string; trip_no: string }[];
-  initialParty?: string; today: string; canOverride: boolean;
+  initialParty?: string; initialTrip?: string; back?: string | null; today: string; canOverride: boolean;
 }) {
   const { t, locale } = useI18n();
   const perm = usePerm();
@@ -33,7 +33,7 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
   const [date, setDate] = useState(today);
   const [notes, setNotes] = useState('');
   const [vehicleRef, setVehicleRef] = useState('');
-  const [trip, setTrip] = useState('');
+  const [trip, setTrip] = useState(initialTrip);
   const [override, setOverride] = useState(false);
   const [final, setFinal] = useState('');
   const [reason, setReason] = useState('');
@@ -63,7 +63,7 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
         : createPurchase({ ...common, supplier_id: party, purchase_date: date, vehicle_ref: vehicleRef, trip_id: trip }, key),
       (d: any) => {
         toast(kind === 'BILL' ? t('b.saved', { no: d.bill_no }) : t('pu.saved', { no: d.purchase_no }));
-        nav(router, 'replace', kind === 'BILL' ? `/app/customers/${party}` : `/app/suppliers/${party}`);
+        nav(router, 'replace', back ?? (kind === 'BILL' ? `/app/customers/${party}` : `/app/suppliers/${party}`));
         router.refresh();
       },
     );

@@ -1,12 +1,11 @@
 'use client';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Minus, Plus } from 'lucide-react';
+import { CheckCircle2, MessageCircle, Minus, Plus } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/client';
-import { inr, lineAmount } from '@/lib/format';
-import { Button, Badge } from '@/components/ui/core';
+import { inr, lineAmount, num } from '@/lib/format';
+import { Button } from '@/components/ui/core';
 import { Segmented, TextInput } from '@/components/ui/fields';
-import { Sheet } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
 import { recordCollection, recordDelivery } from '@/app/actions/ops';
@@ -29,27 +28,34 @@ function Stepper({ value, onChange, max, label }: { value: number; onChange: (n:
 }
 
 /**
- * Delivery entry for one customer on a trip. Large controls for drivers; explicit
- * confirmation before saving because saving posts the customer's bill.
+ * Delivery for one customer: weigh, rate, bill. Shows today's bill + previous due = total,
+ * takes any money paid, and ends with a bill the driver can send on WhatsApp.
+ * Fewer / returned / dead birds are behind one link so the usual case stays short.
  */
 export function DeliveryForm({ tripId, customer, lines, canOverride, onDone }: {
-  tripId: string; customer: { id: string; name: string }; lines: DeliveryLine[]; canOverride: boolean; onDone?: () => void;
+  tripId: string; customer: { id: string; name: string; phone?: string | null; balance?: number }; lines: DeliveryLine[]; canOverride: boolean; onDone?: () => void;
 }) {
   const { t } = useI18n();
   const toast = useToast();
   const router = useRouter();
   const key = useMemo(() => crypto.randomUUID(), []);
-  const [v, setV] = useState(() => lines.map((l) => ({ delivered: l.allocated_qty, returned: 0, damaged: 0, weight: '', rate: l.rate })));
+  const noRate = (l: DeliveryLine) => !(Number(l.rate) > 0);
+  const [v, setV] = useState(() => lines.map((l) => ({ delivered: l.allocated_qty, returned: 0, damaged: 0, weight: '', rate: noRate(l) ? '' : l.rate })));
+  const [fewer, setFewer] = useState(false);
   const [reason, setReason] = useState('');
   const [collect, setCollect] = useState('');
   const [method, setMethod] = useState<Method>('CASH');
   const [ref, setRef] = useState('');
-  const [confirm, setConfirm] = useState(false);
   const [result, setResult] = useState<any>(null);
   const { pending, err, setErr, run } = useSubmit();
 
   const amounts = v.map((x) => (x.delivered > 0 ? lineAmount(x.weight || '0', x.rate || '0') ?? 0 : 0));
   const total = Math.round(amounts.reduce((a, b) => a + b, 0) * 100) / 100;
+  const kg = v.reduce((s, x) => s + (x.delivered > 0 ? Number(x.weight || 0) : 0), 0);
+  // what was owed before this delivery (frozen: after saving, the refreshed balance includes today's bill)
+  const [prev] = useState(() => Number(customer.balance ?? 0));
+  const grand = Math.round((prev + total) * 100) / 100;
+  const paid = Number(collect || 0);
   const delivered = v.reduce((s, x) => s + x.delivered, 0);
   const allocated = lines.reduce((s, l) => s + l.allocated_qty, 0);
   const status = delivered === 0 ? 'FAILED' : delivered === allocated ? 'DELIVERED' : 'PARTIAL';
@@ -57,7 +63,6 @@ export function DeliveryForm({ tripId, customer, lines, canOverride, onDone }: {
     if (j !== i) return x;
     const n = { ...x, ...p };
     const max = lines[i].allocated_qty;
-    // keep delivered + returned + damaged within the allocation
     if (n.delivered + n.returned + n.damaged > max) {
       if ('delivered' in p) { n.returned = Math.max(0, Math.min(n.returned, max - n.delivered)); n.damaged = Math.max(0, max - n.delivered - n.returned); }
       else n.delivered = Math.max(0, max - n.returned - n.damaged);
@@ -65,33 +70,51 @@ export function DeliveryForm({ tripId, customer, lines, canOverride, onDone }: {
     return n;
   }));
 
-  const check = () => {
+  const save = () => {
     setErr(null);
-    for (let i = 0; i < v.length; i++) if (v[i].delivered > 0 && !(Number(v[i].weight) > 0)) return setErr(`${lines[i].size}: ${t('d.weight')} — ${t('err.required')}`);
+    for (let i = 0; i < v.length; i++) {
+      if (v[i].delivered > 0 && !(Number(v[i].weight) > 0)) return setErr(`${lines[i].size}: ${t('d.weight')} — ${t('err.required')}`);
+      if (v[i].delivered > 0 && !(Number(v[i].rate) > 0)) return setErr(`${lines[i].size}: ${t('c.ratePerKg')} — ${t('err.required')}`);
+    }
     if (status !== 'DELIVERED' && reason.trim().length < 2) return setErr(t('d.reason') + ' — ' + t('err.required'));
-    if (collect && !(Number(collect) > 0)) return setErr(t('err.positive'));
-    setConfirm(true);
+    if (collect && !(paid > 0)) return setErr(t('err.positive'));
+    const fill = lines.map((l, i) => (noRate(l) && v[i].delivered > 0 ? { allocation_id: l.allocation_id, rate: v[i].rate } : null)).filter(Boolean) as { allocation_id: string; rate: string }[];
+    run(
+      () => recordDelivery(tripId, customer.id, {
+        items: lines.map((l, i) => ({ allocation_id: l.allocation_id, delivered_qty: v[i].delivered, returned_qty: v[i].returned, damaged_qty: v[i].damaged,
+          weight_kg: v[i].delivered > 0 ? v[i].weight : '', rate: !noRate(l) && v[i].rate !== l.rate ? v[i].rate : '' })),
+        reason, notes: '', final_amount: '', adjustment_reason: '',
+        collection: paid > 0 ? { amount: collect, method, reference: ref } : undefined,
+      }, key, fill),
+      (d) => { setResult(d); toast(t('d.saved')); router.refresh(); },
+    );
   };
 
-  const save = () => run(
-    () => recordDelivery(tripId, customer.id, {
-      items: lines.map((l, i) => ({ allocation_id: l.allocation_id, delivered_qty: v[i].delivered, returned_qty: v[i].returned, damaged_qty: v[i].damaged,
-        weight_kg: v[i].delivered > 0 ? v[i].weight : '', rate: v[i].rate !== l.rate ? v[i].rate : '' })),
-      reason, notes: '', final_amount: '', adjustment_reason: '',
-      collection: collect && Number(collect) > 0 ? { amount: collect, method, reference: ref } : undefined,
-    }, key),
-    (d) => { setConfirm(false); setResult(d); toast(t('d.saved')); router.refresh(); },
-    () => { setConfirm(false); },
-  );
+  const billText = () => [
+    `*${customer.name}*`,
+    ...lines.map((l, i) => v[i].delivered > 0 ? `${l.size}: ${v[i].delivered} ${t('c.birds')} · ${v[i].weight} kg × ₹${v[i].rate} = ${inr(amounts[i])}` : null).filter(Boolean),
+    `${t('d.todayBill')}: ${inr(total)}`,
+    `${t('d.prevDue')}: ${inr(prev)}`,
+    `${t('d.totalDue')}: ${inr(grand)}`,
+    ...(paid > 0 ? [`${t('d.collect')}: ${inr(paid)}`, `${t('d.leftDue')}: ${inr(grand - paid)}`] : []),
+  ].join('\n');
 
   if (result) {
+    const phone = (customer.phone ?? '').replace(/\D/g, '');
     return (
-      <div className="flex flex-col items-center py-6 text-center">
-        <CheckCircle2 className="h-14 w-14 text-good" />
-        <p className="mt-3 text-lg font-semibold">{t('d.saved')}</p>
-        {result.bill_no && <p className="mt-1 text-ink-muted">{t('d.billCreated', { no: result.bill_no, amount: inr(result.bill_amount) })}</p>}
-        {result.payment_status === 'PENDING_VERIFICATION' && <p className="mt-2"><Badge tone="warn">{t('d.pendingVerify')}</Badge></p>}
-        <Button className="mt-5" onClick={onDone}>{t('c.done')}</Button>
+      <div className="space-y-4">
+        <div className="flex flex-col items-center pt-2 text-center">
+          <CheckCircle2 className="h-12 w-12 text-good" />
+          <p className="mt-2 text-lg font-semibold">{t('d.saved')}</p>
+        </div>
+        <BillBox t={t} kg={kg} total={total} prev={prev} grand={grand} paid={paid} />
+        {phone && (
+          <a href={`https://wa.me/${phone.length === 10 ? '91' + phone : phone}?text=${encodeURIComponent(billText())}`} target="_blank" rel="noreferrer"
+            className="press flex h-12 w-full items-center justify-center gap-2 rounded-[14px] bg-[#1FA855] text-[16px] font-semibold text-white">
+            <MessageCircle className="h-5 w-5" /> {t('d.sendBill')}
+          </a>
+        )}
+        <Button variant="outline" size="lg" className="w-full" onClick={onDone}>{t('c.done')}</Button>
       </div>
     );
   }
@@ -100,45 +123,44 @@ export function DeliveryForm({ tripId, customer, lines, canOverride, onDone }: {
     <div className="space-y-4">
       {lines.map((l, i) => (
         <div key={l.allocation_id} className="card space-y-3 p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-baseline justify-between gap-2">
             <p className="text-lg font-semibold">{l.size}</p>
-            <p className="text-sm text-ink-muted">{t('d.allocated')}: <span className="font-semibold text-ink">{l.allocated_qty}</span></p>
+            <p className="tabular text-[15px]"><span className="font-semibold">{v[i].delivered}</span> <span className="text-ink-muted">{t('c.birds')}</span></p>
           </div>
-          <Stepper label={t('d.delivered')} value={v[i].delivered} max={l.allocated_qty} onChange={(n) => set(i, { delivered: n })} />
-          <div className="grid grid-cols-2 gap-2">
-            <Stepper label={t('d.returned')} value={v[i].returned} max={l.allocated_qty} onChange={(n) => set(i, { returned: n })} />
-            <Stepper label={t('d.damaged')} value={v[i].damaged} max={l.allocated_qty} onChange={(n) => set(i, { damaged: n })} />
-          </div>
-          {v[i].delivered > 0 && (
-            <div className="grid grid-cols-2 gap-2">
-              <TextInput label={t('d.weight')} inputMode="decimal" suffix="kg" value={v[i].weight} onChange={(e) => set(i, { weight: e.target.value })} className="text-lg" />
-              <TextInput label={t('c.ratePerKg')} inputMode="decimal" prefix="₹" value={v[i].rate} readOnly={!canOverride} onChange={(e) => set(i, { rate: e.target.value })} />
+          {fewer && (
+            <div className="space-y-2">
+              <Stepper label={t('d.delivered')} value={v[i].delivered} max={l.allocated_qty} onChange={(n) => set(i, { delivered: n })} />
+              <div className="grid grid-cols-2 gap-2">
+                <Stepper label={t('d.returned')} value={v[i].returned} max={l.allocated_qty} onChange={(n) => set(i, { returned: n })} />
+                <Stepper label={t('d.damaged')} value={v[i].damaged} max={l.allocated_qty} onChange={(n) => set(i, { damaged: n })} />
+              </div>
             </div>
           )}
-          <p className="tabular text-right text-sm text-ink-muted">{t('c.amount')}: <span className="font-semibold text-ink">{inr(amounts[i])}</span></p>
+          {v[i].delivered > 0 && (
+            <div className="grid grid-cols-2 gap-2">
+              <TextInput label={t('d.weight')} inputMode="decimal" suffix="kg" value={v[i].weight} onChange={(e) => set(i, { weight: e.target.value.replace(/[^\d.]/g, '') })} className="text-lg" />
+              <TextInput label={t('c.ratePerKg')} inputMode="decimal" prefix="₹" value={v[i].rate} readOnly={!canOverride && !noRate(l)}
+                onChange={(e) => set(i, { rate: e.target.value.replace(/[^\d.]/g, '') })} />
+            </div>
+          )}
+          {v[i].delivered > 0 && <p className="tabular text-right text-[15px]">{inr(amounts[i])}</p>}
         </div>
       ))}
 
-      <div className="flex items-center justify-between rounded-2xl bg-white/70 px-4 py-3">
-        <span className="text-ink-muted">{t('c.status')}</span>
-        <Badge tone={status === 'DELIVERED' ? 'good' : status === 'PARTIAL' ? 'warn' : 'bad'}>{t(`d.s.${status}` as any)}</Badge>
-      </div>
+      {!fewer && <button type="button" onClick={() => setFewer(true)} className="press w-full text-center text-[15px] font-medium text-aqua-deep">{t('d.fewer')}</button>}
       {status !== 'DELIVERED' && <TextInput label={t('d.reason')} value={reason} onChange={(e) => setReason(e.target.value)} />}
 
-      <section className="rounded-[24px] bg-ink p-5 text-white">
-        <p className="text-white/70">{t('b.amount')}</p>
-        <p className="tabular text-[34px] font-semibold tracking-tight">{inr(total)}</p>
-      </section>
+      <BillBox t={t} kg={kg} total={total} prev={prev} grand={grand} />
 
       <div className="space-y-3">
         <p className="label">{t('d.collect')}</p>
         <div className="no-scrollbar flex gap-2 overflow-x-auto">
-          {[{ l: t('d.collectNone'), v: '' }, ...(total > 0 ? [{ l: inr(total), v: total.toFixed(2) }] : [])].map((c) => (
-            <button key={c.l} type="button" onClick={() => setCollect(c.v)} className={`press h-11 shrink-0 rounded-full px-5 text-[15px] font-medium ${collect === c.v ? 'bg-ink text-white' : 'border border-ink/15 bg-white/60'}`}>{c.l}</button>
+          {[{ l: t('d.collectNone'), v: '' }, ...(total > 0 ? [{ l: inr(total, { decimals: false }), v: total.toFixed(2) }] : []), ...(grand > total && grand > 0 ? [{ l: inr(grand, { decimals: false }), v: grand.toFixed(2) }] : [])].map((c) => (
+            <button key={c.l + c.v} type="button" onClick={() => setCollect(c.v)} className={`press h-11 shrink-0 rounded-full px-5 text-[15px] font-medium ${collect === c.v ? 'bg-ink text-white' : 'border border-line bg-white'}`}>{c.l}</button>
           ))}
         </div>
-        <TextInput inputMode="decimal" prefix="₹" value={collect} onChange={(e) => setCollect(e.target.value)} placeholder="0" aria-label={t('c.amount')} />
-        {collect && Number(collect) > 0 && (
+        <TextInput inputMode="decimal" prefix="₹" value={collect} onChange={(e) => setCollect(e.target.value.replace(/[^\d.]/g, ''))} placeholder="0" aria-label={t('c.amount')} />
+        {paid > 0 && (
           <>
             <Segmented value={method} onChange={setMethod} options={(['CASH', 'UPI', 'BANK_TRANSFER', 'OTHER'] as Method[]).map((m) => ({ value: m, label: t(`pay.m.${m}` as any) }))} />
             {method !== 'CASH' && <TextInput label={t('c.reference')} value={ref} onChange={(e) => setRef(e.target.value)} />}
@@ -147,23 +169,23 @@ export function DeliveryForm({ tripId, customer, lines, canOverride, onDone }: {
       </div>
 
       <ErrorBox msg={err} />
-      <Button size="lg" className="w-full" onClick={check} disabled={pending}>{t('d.record')}</Button>
-
-      <Sheet open={confirm} onClose={() => setConfirm(false)} title={t('d.confirmTitle')} locked={pending}
-        footer={<><Button variant="outline" onClick={() => setConfirm(false)} disabled={pending}>{t('c.back')}</Button>
-          <Button onClick={save} disabled={pending}>{pending ? t('c.saving') : t('c.confirm')}</Button></>}>
-        <div className="space-y-2 text-[15px]">
-          <p>{t('d.confirmText', { customer: customer.name })}</p>
-          <ul className="divide-y divide-line rounded-2xl bg-white/80 px-4">
-            {lines.map((l, i) => (
-              <li key={l.allocation_id} className="tabular flex justify-between py-2"><span>{l.size} · {v[i].delivered}{v[i].delivered > 0 ? ` · ${v[i].weight} kg` : ''}</span><span>{inr(amounts[i])}</span></li>
-            ))}
-          </ul>
-          <p className="tabular flex justify-between font-semibold"><span>{t('c.total')}</span><span>{inr(total)}</span></p>
-          {collect && Number(collect) > 0 && <p className="tabular flex justify-between"><span>{t('d.collect')} ({t(`pay.m.${method}` as any)})</span><span>{inr(collect)}</span></p>}
-        </div>
-      </Sheet>
+      <Button size="lg" className="w-full" onClick={save} disabled={pending}>{pending ? t('c.saving') : t('d.makeBill')}</Button>
     </div>
+  );
+}
+
+function BillBox({ t, kg, total, prev, grand, paid }: { t: (k: any, p?: any) => string; kg: number; total: number; prev: number; grand: number; paid?: number }) {
+  const row = (l: string, v: string, strong = false) => (
+    <div className={`tabular flex items-baseline justify-between gap-3 ${strong ? 'border-t border-white/15 pt-2 text-[20px] font-semibold' : 'text-[15px] text-white/80'}`}><span>{l}</span><span className={strong ? '' : 'text-white'}>{v}</span></div>
+  );
+  return (
+    <section className="space-y-2 rounded-[22px] bg-ink p-5 text-white">
+      {row(t('d.todayWeight'), `${num(kg)} kg`)}
+      {row(t('d.todayBill'), inr(total))}
+      {row(t('d.prevDue'), inr(prev))}
+      {row(t('d.totalDue'), inr(grand), true)}
+      {paid != null && paid > 0 && <>{row(t('d.collect'), inr(paid))}{row(t('d.leftDue'), inr(grand - paid), true)}</>}
+    </section>
   );
 }
 

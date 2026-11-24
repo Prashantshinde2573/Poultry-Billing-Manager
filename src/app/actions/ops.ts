@@ -55,6 +55,14 @@ export async function recordLoad(tripId: string, entries: { bird_size_id: string
 }
 
 /** Dead / damaged birds reported during the trip (driver or office). */
+/** Take an order straight onto a trip: party + birds per size. */
+export async function tripAddOrder(tripId: string, customerId: string, items: { bird_size_id: string; qty: number }[], key: string) {
+  const v = z.array(z.object({ bird_size_id: zId, qty: z.number().int().min(0).max(100000) })).min(1).safeParse(items);
+  if (!v.success || !zKey.safeParse(key).success || !zId.safeParse(customerId).success) return invalid(v.error ?? new z.ZodError([]));
+  if (!v.data.some((i) => i.qty > 0)) return { ok: false as const, code: 'VALIDATION', detail: 'birds' };
+  return call<{ id: string; order_no: string }>('trip_add_order', { p_trip_id: zId.parse(tripId), p_customer_id: customerId, p_items: v.data, p_idempotency_key: key });
+}
+
 export async function reportTripLoss(tripId: string, sizeId: string, qty: number, kind: 'DEATH' | 'DAMAGE', note: string) {
   if (!Number.isInteger(qty) || qty < 1 || qty > 100000) return { ok: false as const, code: 'VALIDATION', detail: 'birds' };
   return call('report_trip_loss', { p_trip_id: zId.parse(tripId), p_bird_size_id: zId.parse(sizeId), p_qty: qty, p_kind: kind, p_note: note.slice(0, 300) });
@@ -72,9 +80,16 @@ const deliverySchema = z.object({
   reason: zText(300), notes: zText(500), final_amount: zMoneyOpt, adjustment_reason: zText(300),
   collection: z.object({ amount: zMoney, method: z.enum(['CASH', 'UPI', 'BANK_TRANSFER', 'OTHER']), reference: zText(60) }).optional(),
 });
-export async function recordDelivery(tripId: string, customerId: string, input: z.input<typeof deliverySchema>, key: string) {
+export async function recordDelivery(tripId: string, customerId: string, input: z.input<typeof deliverySchema>, key: string, fillRates: { allocation_id: string; rate: string }[] = []) {
   const v = deliverySchema.safeParse(input);
   if (!v.success || !zKey.safeParse(key).success) return invalid(v.error ?? new z.ZodError([]));
+  // lines taken without a rate: set the rate first (allowed for the driver too, only while it is empty)
+  for (const f of fillRates) {
+    const r = zMoney.safeParse(f.rate);
+    if (!r.success || !zId.safeParse(f.allocation_id).success) return { ok: false as const, code: 'VALIDATION', detail: 'rate' };
+    const s = await call('set_allocation_rate', { p_allocation_id: f.allocation_id, p_rate: r.data });
+    if (!s.ok) return s;
+  }
   const p = { ...v.data, items: v.data.items.map((i) => ({ ...i, weight_kg: i.weight_kg || (i.delivered_qty > 0 ? i.weight_kg : '0'), rate: i.rate || null })) };
   return call<{ delivery_id: string; status: string; bill_no: string | null; bill_amount: string | null; payment_status: string | null; balance: string | null }>(
     'record_delivery', { p_trip_id: zId.parse(tripId), p_customer_id: zId.parse(customerId), p, p_idempotency_key: key });
