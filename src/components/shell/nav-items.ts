@@ -20,14 +20,14 @@ export const NAV: NavItem[] = [
 ];
 
 export const NEW_ENTRY: NavItem[] = [
-  { href: '/app/trips/new', key: 'qa.trip', icon: 'truck', module: 'trips' },
+  { href: '/app/orders/new', key: 'qa.order', icon: 'clipboard', module: 'orders' },
   { href: '/app/payments/new', key: 'qa.payment', icon: 'down' },
-  { href: '/app/customers/new', key: 'qa.customer', icon: 'userplus' },
+  { href: '/app/trips/new', key: 'qa.trip', icon: 'truck', module: 'trips' },
   { href: '/app/purchases/new', key: 'qa.purchase', icon: 'basket', perm: 'suppliers', module: 'suppliers' },
+  { href: '/app/payments/new?dir=OUT', key: 'qa.paySupplier', icon: 'up', perm: 'suppliers', module: 'suppliers' },
   { href: '/app/expenses?new=1', key: 'qa.expense', icon: 'receipt', perm: 'expenses', module: 'expenses' },
   { href: '/app/bills/new', key: 'qa.bill', icon: 'scroll' },
-  { href: '/app/payments/new?dir=OUT', key: 'qa.paySupplier', icon: 'up', perm: 'suppliers', module: 'suppliers' },
-  { href: '/app/orders/new', key: 'qa.order', icon: 'clipboard', module: 'orders' },
+  { href: '/app/customers/new', key: 'qa.customer', icon: 'userplus' },
   { href: '/app/suppliers/new', key: 'qa.supplier', icon: 'factory', perm: 'suppliers', module: 'suppliers' },
 ];
 
