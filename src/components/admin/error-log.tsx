@@ -19,7 +19,7 @@ export function ErrorLog({ data, resolved }: { data: { open: number; today: numb
   const router = useRouter();
   const [open, setOpen] = useState<number | null>(null);
   const [pending, start] = useTransition();
-  const resolve = (ids: number[] | null) => start(async () => { await resolveErrors(ids); router.refresh(); });
+  const resolve = (ids: number[] | null) => start(async () => { await resolveErrors(ids); });
   return (
     <div className="space-y-6">
       <PageHeader title="Error log" sub="Crashes and failed saves from every business, newest first."

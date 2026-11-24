@@ -31,7 +31,7 @@ export function VoidButton({ kind, id, label, compact = true }: { kind: keyof ty
         footer={<>
           <Button variant="outline" onClick={() => setOpen(false)} disabled={pending}>{t('c.cancel')}</Button>
           <Button variant="danger" disabled={pending || reason.trim().length < 3}
-            onClick={() => run(() => ACTIONS[kind](id, reason), () => { toast(t('c.saved')); setOpen(false); router.refresh(); })}>{t('c.void')}</Button>
+            onClick={() => run(() => ACTIONS[kind](id, reason), () => { toast(t('c.saved')); setOpen(false); })}>{t('c.void')}</Button>
         </>}>
         <div className="space-y-3">
           <TextInput label={t('c.reason')} value={reason} onChange={(e) => setReason(e.target.value)} autoFocus />

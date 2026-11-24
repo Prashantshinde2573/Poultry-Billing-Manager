@@ -46,7 +46,7 @@ export function Leads({ rows }: { rows: any[] }) {
         </div>
       )}
       <Sheet open={!!ed} onClose={() => setEd(null)} title={ed?.name ?? ''}
-        footer={<><Button variant="outline" onClick={() => setEd(null)}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminUpdateLead(ed.id, ed.status, ed.notes), () => { setEd(null); router.refresh(); })}>Save</Button></>}>
+        footer={<><Button variant="outline" onClick={() => setEd(null)}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminUpdateLead(ed.id, ed.status, ed.notes), () => { setEd(null); })}>Save</Button></>}>
         {ed && <div className="space-y-3">
           <p className="tabular text-[15px]">{ed.phone}</p>
           <SelectInput label="Status" value={ed.status} onChange={(e) => setEd({ ...ed, status: e.target.value })}>{Object.entries(ST).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</SelectInput>

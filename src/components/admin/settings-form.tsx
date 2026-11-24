@@ -35,7 +35,7 @@ export function AdminSettings({ s }: { s: any }) {
           <TextInput label="Grace days (suggested)" inputMode="numeric" value={f.grace_days} onChange={set('grace_days')} />
         </div>
         <ErrorBox msg={a.err} />
-        <Button disabled={a.pending} onClick={() => a.run(() => adminSaveSettings(f), () => { toast('Saved'); router.refresh(); })}>Save settings</Button>
+        <Button disabled={a.pending} onClick={() => a.run(() => adminSaveSettings(f), () => { toast('Saved'); })}>Save settings</Button>
       </section>
       <section className="card space-y-4 p-5 sm:max-w-md">
         <h2 className="text-[16px] font-semibold">Your password</h2>

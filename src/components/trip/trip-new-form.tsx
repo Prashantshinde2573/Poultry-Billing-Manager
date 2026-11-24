@@ -18,7 +18,7 @@ export function TripNewForm({ drivers, vehicles, today }: { drivers: { id: strin
   const [f, setF] = useState({ trip_date: today, driver_id: drivers[0]?.id ?? '', vehicle_id: vehicles[0]?.id ?? '', notes: '' });
   const { pending, err, run } = useSubmit();
   return (
-    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); run(() => createTrip(f, key), (d) => { toast(t('t.saved', { no: d.trip_no })); const back = safeNext(new URLSearchParams(location.search).get('next')); nav(router, 'replace', back ?? `/app/trips/${d.id}`); router.refresh(); }); }}>
+    <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); run(() => createTrip(f, key), (d) => { toast(t('t.saved', { no: d.trip_no })); const back = safeNext(new URLSearchParams(location.search).get('next')); nav(router, 'replace', back ?? `/app/trips/${d.id}`); }); }}>
       <TextInput type="date" label={t('c.date')} value={f.trip_date} onChange={(e) => setF({ ...f, trip_date: e.target.value })} required />
       <SelectInput label={t('c.driver')} addNew={perm.owner ? { label: t('add.driver'), to: '/app/settings?add=driver' } : null} value={f.driver_id} onChange={(e) => setF({ ...f, driver_id: e.target.value })}>
         <option value="">—</option>{drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}

@@ -38,7 +38,7 @@ export function PlansEditor({ plans }: { plans: any[] }) {
         ))}
       </div>
       <Sheet open={!!ed} onClose={() => setEd(null)} title={ed?.isNew ? 'New plan' : `Edit ${ed?.name ?? ''}`} wide
-        footer={<><Button variant="outline" onClick={() => setEd(null)}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminUpsertPlan(ed), () => { toast('Plan saved'); setEd(null); router.refresh(); })}>Save plan</Button></>}>
+        footer={<><Button variant="outline" onClick={() => setEd(null)}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminUpsertPlan(ed), () => { toast('Plan saved'); setEd(null); })}>Save plan</Button></>}>
         {ed && <div className="space-y-5">
           <div className="grid gap-3 sm:grid-cols-3">
             <TextInput label="Code" value={ed.id} disabled={!ed.isNew} onChange={(e) => set('id', e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))} hint="lowercase, no spaces" />

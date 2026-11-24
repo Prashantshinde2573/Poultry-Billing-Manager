@@ -31,7 +31,7 @@ export function ExpenseSheet({ cats, trips, today, startOpen, startTrip }: {
   const { pending, err, run } = useSubmit();
   const close = () => { setOpen(false); if (startOpen) nav(router, 'replace', path); };
   const save = (confirm: boolean) => run(() => createExpense({ ...f, confirm_duplicate: confirm }, key), () => {
-    toast(t('e.saved')); setF(blank()); setKey(crypto.randomUUID()); setDup(false); close(); router.refresh();
+    toast(t('e.saved')); setF(blank()); setKey(crypto.randomUUID()); setDup(false); close();
   }, (r) => { if (r.code === 'POSSIBLE_DUPLICATE') { setDup(true); return true; } });
   return (
     <>

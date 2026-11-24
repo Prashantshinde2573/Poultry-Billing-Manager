@@ -16,7 +16,7 @@ export function OrderActions({ id, status }: { id: string; status: string }) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState('');
   const { pending, err, run } = useSubmit();
-  const done = () => { toast(t('c.saved')); setOpen(false); router.refresh(); };
+  const done = () => { toast(t('c.saved')); setOpen(false); };
   return (
     <div className="flex flex-wrap gap-2">
       {status === 'DRAFT' && <Button disabled={pending} onClick={() => run(() => setOrderStatus(id, 'CONFIRMED'), done)}>{t('c.confirm')}</Button>}

@@ -715,7 +715,7 @@ export const en = {
   'add.size': 'Add new size',
   'add.category': 'Add new category',
   'add.trip': 'Start new trip',
-  'c.slow': 'Slow internet. Trying again…',
+  'c.slow': 'Taking a little longer…',
   'set.license': 'Licence no. (optional)',
   't.totalBirds': 'Total birds',
   't.totalWeight': 'Total weight of the load',

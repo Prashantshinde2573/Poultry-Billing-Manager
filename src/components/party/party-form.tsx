@@ -57,7 +57,6 @@ export function PartyForm({ kind, initial, canSuppliers, isOwner, next, as }: { 
       if (as && /^[a-z_]{2,20}$/.test(as)) u.searchParams.set(as, id!);
       nav(router, 'replace', u.pathname + u.search);
     } else nav(router, 'replace', `/app/${kind === 'CUSTOMER' ? 'customers' : 'suppliers'}/${id}`);
-    router.refresh();
   });
 
   return (

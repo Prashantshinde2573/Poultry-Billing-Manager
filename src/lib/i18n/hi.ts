@@ -696,7 +696,7 @@ export const hi: Messages = {
   'add.size': 'नया साइज़ जोड़ें',
   'add.category': 'नया प्रकार जोड़ें',
   'add.trip': 'नई ट्रिप शुरू करें',
-  'c.slow': 'इंटरनेट धीमा है. फिर कोशिश…',
+  'c.slow': 'थोड़ा समय लग रहा है…',
   'set.license': 'लाइसेंस नंबर (ज़रूरी नहीं)',
   't.totalBirds': 'कुल पक्षी',
   't.totalWeight': 'भरे माल का कुल वजन',

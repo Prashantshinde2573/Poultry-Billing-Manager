@@ -64,7 +64,6 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', i
       (d: any) => {
         toast(kind === 'BILL' ? t('b.saved', { no: d.bill_no }) : t('pu.saved', { no: d.purchase_no }));
         nav(router, 'replace', back ?? (kind === 'BILL' ? `/app/customers/${party}` : `/app/suppliers/${party}`));
-        router.refresh();
       },
     );
   };

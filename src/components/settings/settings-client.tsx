@@ -21,7 +21,7 @@ function useDone(close: () => void) {
   return () => {
     toast(t('c.saved')); close();
     const back = safeNext(sp.get('next'));
-    if (back) nav(router, 'push', back); else router.refresh();
+    if (back) nav(router, 'push', back);
   };
 }
 

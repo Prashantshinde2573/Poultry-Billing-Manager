@@ -86,7 +86,7 @@ export function DeliveryForm({ tripId, customer, lines, canOverride, onDone }: {
         reason, notes: '', final_amount: '', adjustment_reason: '',
         collection: paid > 0 ? { amount: collect, method, reference: ref } : undefined,
       }, key, fill),
-      (d) => { setResult(d); toast(t('d.saved')); router.refresh(); },
+      (d) => { setResult(d); toast(t('d.saved')); },
     );
   };
 
@@ -207,8 +207,7 @@ export function CollectionForm({ tripId, customerId, onDone }: { tripId: string;
       <ErrorBox msg={err} />
       <Button size="lg" className="w-full" disabled={pending || !(Number(amount) > 0)}
         onClick={() => run(() => recordCollection(tripId, customerId, { amount, method, reference: ref }, key), (d: any) => {
-          toast(d.status === 'PENDING_VERIFICATION' ? t('d.pendingVerify') : t('pay.saved'));
-          router.refresh(); onDone?.();
+          toast(d.status === 'PENDING_VERIFICATION' ? t('d.pendingVerify') : t('pay.saved')); onDone?.();
         })}>{pending ? t('c.saving') : t('pay.save')}</Button>
     </div>
   );

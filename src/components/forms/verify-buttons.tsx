@@ -17,7 +17,7 @@ export function VerifyButtons({ id }: { id: string }) {
   const [rej, setRej] = useState(false);
   const [reason, setReason] = useState('');
   const { pending, err, run } = useSubmit();
-  const done = () => { toast(t('c.saved')); setRej(false); router.refresh(); };
+  const done = () => { toast(t('c.saved')); setRej(false); };
   return (
     <div className="flex flex-col items-end gap-1">
       <div className="flex gap-1.5">

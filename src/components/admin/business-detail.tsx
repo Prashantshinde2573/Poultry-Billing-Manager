@@ -30,7 +30,7 @@ export function BusinessDetail({ d, plans, activity, renewRequest }: { d: any; p
   const [sheet, setSheet] = useState<null | 'renew' | 'dates' | 'edit' | 'suspend'>(req ? 'renew' : null);
   const [creds, setCreds] = useState<string | null>(null);
   const { pending, err, setErr, run } = useSubmit();
-  const done = (msg: string) => () => { toast(msg); setSheet(null); router.refresh(); };
+  const done = (msg: string) => () => { toast(msg); setSheet(null); };
 
   const [rn, setRn] = useState({ plan_id: req?.plan_id ?? (b.plan_id === 'trial' ? plans.find((p) => p.id !== 'trial')?.id ?? '' : b.plan_id), months: String(req?.months ?? 12), amount: req?.amount ? String(req.amount) : '', method: 'UPI', reference: req?.reference ?? '', paid_on: today, note: '' });
   const rnPlan = plans.find((p) => p.id === rn.plan_id);

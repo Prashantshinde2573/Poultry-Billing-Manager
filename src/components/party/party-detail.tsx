@@ -125,6 +125,12 @@ export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string;
           <div className="rounded-2xl bg-white/70 py-2.5"><p className="text-ink-muted">{t('l.closing')}</p><p className="tabular font-semibold">{inrSmart(st.closing)}</p></div>
           <div className="rounded-2xl bg-white/70 py-2.5"><p className="text-ink-muted">{t('l.current')}</p><p className="tabular font-semibold">{inrSmart(st.current)}</p></div>
         </div>
+        {Number(st.birds) > 0 && (
+          <div className="mt-2 grid grid-cols-2 gap-2 text-center text-sm">
+            <div className="rounded-2xl bg-mint py-2.5"><p className="text-ink-muted">{t('c.birds')}</p><p className="tabular text-[17px] font-semibold">{num(st.birds)}</p></div>
+            <div className="rounded-2xl bg-mint py-2.5"><p className="text-ink-muted">{t('c.weight')}</p><p className="tabular text-[17px] font-semibold">{num(st.kg)} kg</p></div>
+          </div>
+        )}
         {(st.rows as any[]).length === 0 ? <p className="py-6 text-center text-ink-muted">{t('c.none')}</p> : (
           <div className="mt-2 divide-y divide-line">
             {[...(st.rows as any[])].reverse().map((r) => {
@@ -133,7 +139,10 @@ export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string;
               return (
                 <Row key={r.id}
                   left={<IconBubble tone={r.is_reversal ? 'warn' : isCredit ? 'good' : 'aqua'}>{isCredit ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}</IconBubble>}
-                  title={t(`l.${r.type}` as any)} sub={`${fmtDate(r.date, locale)}${r.description ? ' · ' + cleanDesc(r.description, t) : ''}`}
+                  title={t(`l.${r.type}` as any)}
+                  sub={Array.isArray(r.items) && r.items.length
+                    ? `${fmtDate(r.date, locale)} · ${(r.items as any[]).map((i) => `${localName({ name: i.size, name_mr: i.size_mr, name_hi: i.size_hi }, locale)} ${i.qty} ${t('c.birds')} · ${num(i.kg)} kg`).join(' | ')}`
+                    : `${fmtDate(r.date, locale)}${r.description ? ' · ' + cleanDesc(r.description, t) : ''}`}
                   amount={`${isCredit ? '−' : '+'}${inrSmart(amt)}`} amountSub={`${t('l.balance')} ${inrSmart(r.balance)}`} tone={isCredit ? 'good' : undefined} />
               );
             })}

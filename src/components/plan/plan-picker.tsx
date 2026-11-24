@@ -153,7 +153,7 @@ export function PlanPicker({ plans, current, initial, business, platform, canReq
                 <TextInput label={t('plan.utr')} value={utr} onChange={(e) => setUtr(e.target.value)} placeholder="4321 1234 5678" />
                 <ErrorBox msg={err} />
                 <div className="flex flex-wrap gap-2">
-                  <Button disabled={pending || utr.trim().length < 4} onClick={() => run(() => requestPlan(plan.id, months, utr), () => { setSent(true); toast(t('plan.requestSent')); router.refresh(); })}>
+                  <Button disabled={pending || utr.trim().length < 4} onClick={() => run(() => requestPlan(plan.id, months, utr), () => { setSent(true); toast(t('plan.requestSent')); })}>
                     {t('plan.sendRequest')}
                   </Button>
                   {wa && <a href={wa} target="_blank" rel="noreferrer" className="press inline-flex h-12 items-center gap-2 rounded-[14px] bg-[#25D366] px-5 text-[15px] font-medium text-white"><MessageCircle className="h-5 w-5" /> {t('plan.whatsapp')}</a>}

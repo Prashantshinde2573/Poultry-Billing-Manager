@@ -37,7 +37,7 @@ export function DriverTripActions({ tripId, status }: { tripId: string; status: 
   return (
     <div className="space-y-2">
       <Button size="lg" className="h-16 w-full rounded-[22px] text-lg" disabled={pending}
-        onClick={() => run(() => setTripStatus(tripId, next), () => start(() => router.refresh()))}>
+        onClick={() => run(() => setTripStatus(tripId, next), () => {})}>
         <Truck className="h-6 w-6" /> {next === 'IN_PROGRESS' ? t('t.start') : t('t.complete')}
       </Button>
       <ErrorBox msg={err} />

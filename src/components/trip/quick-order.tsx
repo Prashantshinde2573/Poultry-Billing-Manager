@@ -29,7 +29,6 @@ export function QuickOrderButton({ tripId, parties, sizes, initialParty = '' }: 
     () => {
       toast(t('c.saved'));
       setParty(''); setQty({}); setKey(crypto.randomUUID());
-      router.refresh();
     },
   );
   return (

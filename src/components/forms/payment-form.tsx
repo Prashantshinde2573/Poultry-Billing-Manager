@@ -45,7 +45,6 @@ export function PaymentForm({ customers, suppliers, initialDir, initialParty, to
     (d) => {
       toast(`${t('pay.saved')} · ${t('b.balanceNow')} ${inr(d.balance)}`);
       nav(router, 'replace', dir === 'IN' ? `/app/customers/${party}` : `/app/suppliers/${party}?ledger=PAYABLE`);
-      router.refresh();
     },
     (r) => {
       if (r.code === 'OVERPAYMENT_CONFIRMATION_REQUIRED') { setOver({ due: String(r.extra?.outstanding ?? due), extra: String(r.extra?.excess ?? '') }); return true; }

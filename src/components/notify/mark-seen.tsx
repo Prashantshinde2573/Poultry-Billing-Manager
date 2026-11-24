@@ -7,7 +7,7 @@ import { markNotificationsSeen } from '@/app/actions/system';
 export function MarkSeen({ unread }: { unread: number }) {
   const router = useRouter();
   useEffect(() => {
-    if (unread > 0) markNotificationsSeen().then(() => router.refresh()).catch(() => {});
+    if (unread > 0) markNotificationsSeen().catch(() => {});
   }, [unread, router]);
   return null;
 }

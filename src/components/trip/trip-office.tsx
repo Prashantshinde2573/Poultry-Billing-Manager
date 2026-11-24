@@ -18,7 +18,7 @@ function useDone() {
   const { t } = useI18n();
   const toast = useToast();
   const router = useRouter();
-  return () => { toast(t('c.saved')); router.refresh(); };
+  return () => { toast(t('c.saved')); };
 }
 
 /* ----------------------------------------------------------- status bar --- */

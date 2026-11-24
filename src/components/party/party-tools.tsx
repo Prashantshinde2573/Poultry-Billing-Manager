@@ -27,8 +27,14 @@ export function DailyShareButton({ summary, business, partyId }: { summary: Dail
   );
 }
 
-export interface StatementData { opening: number | string; closing: number | string; current: number | string; from: string; to: string;
+export interface StatementData { opening: number | string; closing: number | string; current: number | string; from: string; to: string; birds?: number | string; kg?: number | string;
   rows: { date: string; type: string; description: string | null; debit: string; credit: string; balance: string }[] }
+
+type DocItem = { size: string; qty: number; kg: number | string; rate: number | string };
+const items = (r: any): DocItem[] => (Array.isArray(r.items) ? r.items : []);
+const docBirds = (r: any) => (items(r).length ? items(r).reduce((s, i) => s + Number(i.qty), 0) : '');
+const docKg = (r: any) => (items(r).length ? Number(items(r).reduce((s, i) => s + Number(i.kg), 0).toFixed(3)) : '');
+const docDetails = (r: any) => items(r).map((i) => `${i.size} ${i.qty} / ${Number(i.kg)}kg @ ${Number(i.rate)}`).join(', ');
 
 export function StatementExport({ st, party, business, ledger, footer }: { st: StatementData; party: string; business: string; ledger: string; footer?: string }) {
   const { t } = useI18n();
@@ -42,15 +48,15 @@ export function StatementExport({ st, party, business, ledger, footer }: { st: S
         try {
           const blob = await buildPdf({
             business, title, subtitle: `${st.from} to ${st.to}`, party, footer,
-            summary: [['Opening', pdfMoney(st.opening)], ['Closing', pdfMoney(st.closing)], ['Today', pdfMoney(st.current)]],
-            tables: [{ head: ['Date', 'Entry', 'Details', 'Debit', 'Credit', 'Balance'], align: ['left', 'left', 'left', 'right', 'right', 'right'],
-              body: [['', 'Opening', '', '', '', pdfMoney(st.opening)], ...st.rows.map((r) => [r.date, r.type, r.description ?? '', Number(r.debit) ? pdfMoney(r.debit) : '', Number(r.credit) ? pdfMoney(r.credit) : '', pdfMoney(r.balance)])] }],
+            summary: [['Opening', pdfMoney(st.opening)], ['Closing', pdfMoney(st.closing)], ['Today', pdfMoney(st.current)], ['Birds', String(st.birds ?? 0)], ['Weight', `${Number(st.kg ?? 0).toFixed(1)} kg`]],
+            tables: [{ head: ['Date', 'Entry', 'Details', 'Birds', 'Kg', 'Debit', 'Credit', 'Balance'], align: ['left', 'left', 'left', 'right', 'right', 'right', 'right', 'right'],
+              body: [['', 'Opening', '', '', '', '', '', pdfMoney(st.opening)], ...st.rows.map((r) => [r.date, r.type, docDetails(r) || (r.description ?? ''), docBirds(r), docKg(r), Number(r.debit) ? pdfMoney(r.debit) : '', Number(r.credit) ? pdfMoney(r.credit) : '', pdfMoney(r.balance)])] }],
           });
           downloadBlob(blob, fname + '.pdf');
         } finally { setBusy(false); }
       }}><Download className="h-4 w-4" /> {t('c.pdf')}</Button>
-      <Button variant="outline" size="sm" onClick={() => downloadCsv(fname, ['Date', 'Entry', 'Details', 'Debit', 'Credit', 'Balance'],
-        [['', 'Opening', '', '', '', Number(st.opening)], ...st.rows.map((r) => [r.date, r.type, r.description ?? '', Number(r.debit) || '', Number(r.credit) || '', Number(r.balance)])])}>
+      <Button variant="outline" size="sm" onClick={() => downloadCsv(fname, ['Date', 'Entry', 'Details', 'Birds', 'Kg', 'Debit', 'Credit', 'Balance'],
+        [['', 'Opening', '', '', '', '', '', Number(st.opening)], ...st.rows.map((r) => [r.date, r.type, docDetails(r) || (r.description ?? ''), docBirds(r), docKg(r), Number(r.debit) || '', Number(r.credit) || '', Number(r.balance)])])}>
         <FileSpreadsheet className="h-4 w-4" /> {t('c.csv')}
       </Button>
     </div>
@@ -70,7 +76,7 @@ export function OwnerPartyTools({ partyId, ledgers, status }: { partyId: string;
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}><Scale className="h-4 w-4" /> {t('p.adjustment')}</Button>
       <Button variant="ghost" size="sm" disabled={pending} onClick={() => start(async () => {
         const r = await setPartyStatus(partyId, status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE');
-        if (!r.ok) toast(t(errorKey(r.code), { detail: r.detail }), 'err'); else router.refresh();
+        if (!r.ok) toast(t(errorKey(r.code), { detail: r.detail }), 'err');
       })}>{status === 'ACTIVE' ? <><Archive className="h-4 w-4" /> {t('p.archive')}</> : <><RotateCcw className="h-4 w-4" /> {t('p.reactivate')}</>}</Button>
       <Sheet open={open} onClose={() => setOpen(false)} title={t('p.adjustment')} locked={pending}
         footer={<><Button variant="outline" onClick={() => setOpen(false)}>{t('c.cancel')}</Button>
@@ -78,7 +84,7 @@ export function OwnerPartyTools({ partyId, ledgers, status }: { partyId: string;
             setErr(null);
             const r = await ledgerAdjustment({ party_id: partyId, ...f });
             if (!r.ok) { setErr(t(errorKey(r.code), { detail: r.detail })); return; }
-            toast(t('c.saved')); setOpen(false); router.refresh();
+            toast(t('c.saved')); setOpen(false);
           })}>{t('c.save')}</Button></>}>
         <div className="space-y-4">
           {ledgers.length > 1 && <Segmented value={f.ledger} onChange={(v) => setF({ ...f, ledger: v })} options={ledgers.map((l) => ({ value: l, label: l === 'RECEIVABLE' ? t('p.receivable') : t('p.payable') }))} />}

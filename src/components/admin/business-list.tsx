@@ -90,7 +90,7 @@ function AddBusiness({ open, onClose, plans }: { open: boolean; onClose: () => v
   return (
     <Sheet open={open} onClose={close} title={done ? 'Business created' : 'Add business'} wide
       footer={done ? <><Button variant="outline" onClick={close}>Close</Button><Button onClick={() => { nav(router, 'push', `/admin/businesses/${done.id}`); close(); }}>Open business</Button></>
-        : <><Button variant="outline" onClick={close}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminCreateBusiness({ ...f, months: Number(f.months), trial_days: Number(f.trial_days) }), (d) => { setDone(d); router.refresh(); })}>{pending ? 'Creating…' : 'Create business and login'}</Button></>}>
+        : <><Button variant="outline" onClick={close}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminCreateBusiness({ ...f, months: Number(f.months), trial_days: Number(f.trial_days) }), (d) => { setDone(d); })}>{pending ? 'Creating…' : 'Create business and login'}</Button></>}>
       {done ? (
         <div className="space-y-4">
           <p className="text-[15px]">Share this with the owner. The password is shown only once; they must change it at first sign-in.</p>
