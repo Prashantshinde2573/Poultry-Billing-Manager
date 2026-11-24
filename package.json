@@ -2,7 +2,7 @@
   "name": "poulgo",
   "version": "2.0.0",
   "private": true,
-  "description": "PoulGo \u2014 Poultry Business Manager 2.0: orders, trips, drivers, deliveries, customer & supplier accounts, WhatsApp summaries, profit & loss.",
+  "description": "PoulGo — Poultry Business Manager 2.0: orders, trips, drivers, deliveries, customer & supplier accounts, WhatsApp summaries, profit & loss.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -17,10 +17,12 @@
     "@fontsource/outfit": "5.2.6",
     "@supabase/ssr": "0.12.7",
     "@supabase/supabase-js": "2.119.0",
+    "@types/qrcode": "^1.5.5",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
     "lucide-react": "0.460.0",
     "next": "15.5.29",
+    "qrcode": "^1.5.4",
     "react": "19.2.9",
     "react-dom": "19.2.9",
     "zod": "^4.6.7"

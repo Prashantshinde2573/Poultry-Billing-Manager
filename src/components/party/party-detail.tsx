@@ -31,7 +31,7 @@ export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string;
     rpc<any>('party_daily_summary', ctx, { p_party_id: id, p_ledger: ledger, p_date: day }),
   ]);
   const { data: biz } = await supabase.from('businesses').select('name, settings').eq('id', ctx.businessId).single();
-  const base = kind === 'CUSTOMER' ? '/customers' : '/suppliers';
+  const base = kind === 'CUSTOMER' ? '/app/customers' : '/app/suppliers';
   const cur = Number(st.current);
   const q = (o: Record<string, string>) => `${base}/${id}?${new URLSearchParams({ ledger, p: period, ...o }).toString()}`;
   const custType = (Array.isArray(party.customers) ? party.customers[0] : party.customers)?.customer_type;
@@ -65,14 +65,14 @@ export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string;
         <div className="mt-5 grid grid-cols-2 gap-2">
           {ledger === 'RECEIVABLE' ? (
             <>
-              <Link href={`/payments/new?party=${id}`} className={btnClass('light', 'md')}><ArrowDownLeft className="h-5 w-5" /> {t('qa.payment')}</Link>
-              <Link href={`/orders/new?customer=${id}`} className={btnClass('light', 'md')}><ClipboardList className="h-5 w-5" /> {t('qa.order')}</Link>
-              <Link href={`/bills/new?customer=${id}`} className={`${btnClass('light', 'md')} col-span-2`}><ScrollText className="h-5 w-5" /> {t('qa.bill')}</Link>
+              <Link href={`/app/payments/new?party=${id}`} className={btnClass('light', 'md')}><ArrowDownLeft className="h-5 w-5" /> {t('qa.payment')}</Link>
+              <Link href={`/app/orders/new?customer=${id}`} className={btnClass('light', 'md')}><ClipboardList className="h-5 w-5" /> {t('qa.order')}</Link>
+              <Link href={`/app/bills/new?customer=${id}`} className={`${btnClass('light', 'md')} col-span-2`}><ScrollText className="h-5 w-5" /> {t('qa.bill')}</Link>
             </>
           ) : (
             <>
-              <Link href={`/payments/new?dir=OUT&party=${id}`} className={btnClass('light', 'md')}><ArrowUpRight className="h-5 w-5" /> {t('qa.paySupplier')}</Link>
-              <Link href={`/purchases/new?supplier=${id}`} className={btnClass('light', 'md')}><ShoppingBasket className="h-5 w-5" /> {t('qa.purchase')}</Link>
+              <Link href={`/app/payments/new?dir=OUT&party=${id}`} className={btnClass('light', 'md')}><ArrowUpRight className="h-5 w-5" /> {t('qa.paySupplier')}</Link>
+              <Link href={`/app/purchases/new?supplier=${id}`} className={btnClass('light', 'md')}><ShoppingBasket className="h-5 w-5" /> {t('qa.purchase')}</Link>
             </>
           )}
         </div>
@@ -80,11 +80,11 @@ export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string;
 
       {/* daily summary (PRD 5.1 / 7.1) */}
       <section className="card p-5">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-[19px] font-semibold">{t('p.dailySummary')}</h2>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+          <h2 className="text-[17px] font-semibold">{t('p.dailySummary')}</h2>
           <form className="flex items-center gap-2" action={`${base}/${id}`}>
             <input type="hidden" name="ledger" value={ledger} />
-            <input type="date" name="day" defaultValue={day} max={today} className="input h-10 w-auto rounded-full px-3 text-sm" aria-label={t('c.date')} />
+            <input type="date" name="day" defaultValue={day} max={today} className="input h-9 w-auto rounded-[12px] px-3 text-[14px]" aria-label={t('c.date')} />
             <button className={btnClass('outline', 'sm')}>{t('c.apply')}</button>
           </form>
         </div>

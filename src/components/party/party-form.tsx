@@ -50,7 +50,7 @@ export function PartyForm({ kind, initial, canSuppliers, isOwner }: { kind: Kind
     }
     toast(t('c.saved'));
     const id = editing ? initial!.id : (r.data as any).id;
-    router.replace(`/${kind === 'CUSTOMER' ? 'customers' : 'suppliers'}/${id}`);
+    router.replace(`/app/${kind === 'CUSTOMER' ? 'customers' : 'suppliers'}/${id}`);
     router.refresh();
   });
 

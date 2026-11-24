@@ -16,29 +16,53 @@ npm run dev          # http://localhost:3000
 ```
 
 `.env.local` is already filled in for the Supabase project **PoulGo** (`yfefimkuiuqoqkzfggqt`).
-One value is left for you:
+Two values are left for you:
 
 ```
 SUPABASE_SERVICE_ROLE_KEY=   # Supabase → Project Settings → API Keys → "secret" key
+SUPER_ADMIN_EMAILS=          # your email, e.g. prashant@example.com
 ```
 
-It is only used on the server when the Owner adds a staff/driver login or resets a password.
+The service key is used only on the server: creating owner/staff/driver logins and resetting passwords.
 Never put it in a `NEXT_PUBLIC_` variable or commit it.
 
-## 2. First login
+## 2. How the business works (same model as Restropi)
 
-1. Supabase → Authentication → Sign In / Providers → Email: turn **Confirm email** off
-   (or keep it on and click the link that arrives).
-2. Open the app → **Create your business account** → you become the **Owner**.
-3. Settings → set sale/purchase **rates** per bird size, add **vehicles**, then **Team & access**
-   to add drivers/staff (they log in with their mobile number + password).
+| Who | Where | What |
+|---|---|---|
+| Anyone | `/` website, `/pricing` | Features, prices (from your Plans), enquiry form, WhatsApp |
+| **You (super admin)** | `/admin` | Add businesses + owner login (temporary password), plans & prices, record payments / renew, grace period, suspend, enquiries, revenue |
+| Owner & staff | `/app` | Only the features in their plan. Reminders before the plan ends; read-only when it ends; renew by UPI from **Plan & billing** |
+| Driver | `/driver` | Own trips: loading, deliveries, cash |
+
+There is **no public sign-up**. You create every client.
+
+### First time: create your super admin login
+1. Put your email in `.env.local`: `SUPER_ADMIN_EMAILS=you@example.com` (and the service key, below).
+2. Open `/admin/login`. While no super admin exists, it shows **Create the super admin**. Fill it once; the form then disappears for good.
+3. `/admin` → **Settings**: add your UPI ID, payee name and WhatsApp number (owners see these on the renew screen).
+4. `/admin` → **Plans**: set your prices and what each plan includes.
+5. **Add business** → share the login + temporary password (copy or WhatsApp). The owner sets their own password at first sign-in.
+
+### Plans (editable in /admin → Plans)
+| | Basic ₹499 | Business ₹999 | Pro ₹1,999 |
+|---|---|---|---|
+| Customers, bills, payments, WhatsApp hisab, statements | ✓ | ✓ | ✓ |
+| Suppliers & purchases, orders, trips + driver app, expenses | – | ✓ | ✓ |
+| Profit & loss, stock cost | – | – | ✓ |
+| Staff / drivers / vehicles | 1 / 0 / 0 | 3 / 3 / 3 | unlimited |
+
+6 months = 5× monthly, 1 year = 10× monthly (editable). Plan rules are enforced in the database, not just hidden in the app.
+
+### Plan states
+Active → (ends) → **Grace** (if you give one; app still works) → **Ended** (read-only: data visible, no new entries) · **Suspended** (team sees a "paused" screen). Recording a payment extends from the later of today and the current end date and switches the business back on.
 
 ## 3. Deploy to Vercel
 
 1. Push this folder to GitHub (e.g. `Prashantshinde2573/Poultry-Billing-Manager`).
 2. vercel.com → New Project → import the repo (framework: Next.js).
 3. Environment variables: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`,
-   `SUPABASE_SERVICE_ROLE_KEY`, `LOGIN_EMAIL_DOMAIN=phone.poulgo.local`.
+   `SUPABASE_SERVICE_ROLE_KEY`, `SUPER_ADMIN_EMAILS`, `LOGIN_EMAIL_DOMAIN=phone.poulgo.local`.
 4. Supabase → Authentication → URL Configuration: add the Vercel URL as Site URL.
 
 ## 4. Database
@@ -68,7 +92,7 @@ Driver collections stay **pending** (not in the customer's balance) until verifi
 ## 6. Tests
 
 ```bash
-npm test            # 22 accounting/permission tests on an in-memory Postgres (PGlite)
+npm test            # 32 accounting, permission and plan tests on an in-memory Postgres (PGlite)
 npm run typecheck
 npm run build
 ```
@@ -76,7 +100,8 @@ npm run build
 ## 7. Structure
 
 ```
-src/app/(office)/     owner & staff screens     src/app/driver/   driver app
+src/app/page.tsx      website                   src/app/admin/    super admin console
+src/app/app/          owner & staff screens     src/app/driver/   driver app
 src/app/actions/      server actions (zod)      src/components/   UI
 src/lib/i18n/         mr / hi / en              supabase/migrations/  schema, RLS, RPCs
 docs/ARCHITECTURE.md  data model & accounting rules

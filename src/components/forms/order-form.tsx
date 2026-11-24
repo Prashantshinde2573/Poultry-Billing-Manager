@@ -34,7 +34,7 @@ export function OrderForm({ parties, sizes, initialParty = '', today }: { partie
     if (!items.length) return setErr(t('err.required') + ': ' + t('c.birds'));
     run(() => createOrder({ customer_id: party, order_date: date, notes, draft, items }, key), (d) => {
       toast(t('o.saved', { no: d.order_no }));
-      router.replace(`/orders/${d.id}`);
+      router.replace(`/app/orders/${d.id}`);
       router.refresh();
     });
   };

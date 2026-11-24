@@ -31,8 +31,13 @@ export async function world(): Promise<World> {
   const otherDriverUser = await db.createUser('Driver Sham');
   const owner2 = await db.createUser('Other Owner');
 
+  const sa = await db.createUser('Super Admin');
+  await db.asAdmin();
+  await db.pg.query(`insert into public.platform_admins (user_id) values ($1)`, [sa]);
+  await db.asUser(sa);
+  const biz = (await db.rpc('admin_create_business', { p_owner: owner, p: { name: 'Shinde Poultry', owner_name: 'Owner One', plan_id: 'pro', months: 12 } })).id;
+  const biz2 = (await db.rpc('admin_create_business', { p_owner: owner2, p: { name: 'Other Farm', owner_name: 'Owner Two', plan_id: 'pro', months: 12 } })).id;
   await db.asUser(owner);
-  const biz = (await db.rpc('create_business', { p_name: 'Shinde Poultry', p_owner_name: 'Owner One' })).id;
   await db.rpc('upsert_member', { p_business_id: biz, p_user_id: staff, p_role: 'staff', p_display_name: 'Staff Plain', p_permissions: {} });
   await db.rpc('upsert_member', { p_business_id: biz, p_user_id: staffSup, p_role: 'staff', p_display_name: 'Staff Accounts',
     p_permissions: { suppliers: true, expenses: true, verify_payments: true } });
@@ -43,12 +48,9 @@ export async function world(): Promise<World> {
   const id = (nm: string) => sizes.find((s) => s.name === nm)!.id;
   const drivers = await db.rows<{ id: string; user_id: string }>(`select id, user_id from public.drivers where business_id = $1`, [biz]);
 
-  await db.asUser(owner2);
-  const biz2 = (await db.rpc('create_business', { p_name: 'Other Farm' })).id;
-  await db.asUser(owner);
 
   return {
-    db, biz, owner, staff, staffSup, driverUser, otherDriverUser, owner2, biz2, vehicle,
+    db, sa, biz, owner, staff, staffSup, driverUser, otherDriverUser, owner2, biz2, vehicle,
     driverId: drivers.find((d) => d.user_id === driverUser)!.id,
     otherDriverId: drivers.find((d) => d.user_id === otherDriverUser)!.id,
     large: id('Large'), medium: id('Medium'), small: id('Small'),

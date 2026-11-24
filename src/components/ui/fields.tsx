@@ -42,13 +42,15 @@ export function TextArea({ label, error, hint, className, ...rest }: ComponentPr
   );
 }
 
-/** Pill-style segmented choice (reference: Expenses / Income / Limits). */
+/** Segmented control: equal segments in a soft track (wraps to scroll only when there are many). */
 export function Segmented<T extends string>({ value, onChange, options, className = '' }: { value: T; onChange: (v: T) => void; options: { value: T; label: ReactNode }[]; className?: string }) {
+  const few = options.length <= 4;
   return (
-    <div className={`no-scrollbar flex gap-2 overflow-x-auto ${className}`} role="radiogroup">
+    <div className={`${few ? 'grid' : 'no-scrollbar flex overflow-x-auto'} gap-1 rounded-[14px] bg-ink/[0.06] p-1 ${className}`} role="radiogroup"
+      style={few ? { gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` } : undefined}>
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} onClick={() => onChange(o.value)}
-          className={`press h-11 shrink-0 rounded-full px-5 text-[15px] font-medium ${value === o.value ? 'bg-ink text-white' : 'border border-ink/15 bg-white/60 text-ink'}`}>
+          className={`press h-10 min-w-0 truncate rounded-[11px] px-3 text-[14px] font-medium ${few ? '' : 'shrink-0'} ${value === o.value ? 'bg-white text-ink shadow-[0_1px_3px_rgba(14,42,47,0.12)]' : 'text-ink-soft hover:text-ink'}`}>
           {o.label}
         </button>
       ))}

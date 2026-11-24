@@ -6,7 +6,7 @@ export function Donut({ parts, center, sub, size = 260 }: { parts: { label: stri
   const r = 100, sw = 26, c = 2 * Math.PI * r, gap = parts.length > 1 ? 10 : 0;
   let off = 0;
   return (
-    <figure className="flex flex-col items-center">
+    <figure className="flex w-full min-w-0 flex-col items-center">
       <svg viewBox="-130 -130 260 260" width={size} height={size} role="img" aria-label={`${sub ?? ''} ${center}`}>
         <circle r={r} fill="none" stroke="#E7F1EF" strokeWidth={sw} />
         {total > 0 && parts.map((p, i) => {
@@ -23,7 +23,7 @@ export function Donut({ parts, center, sub, size = 260 }: { parts: { label: stri
         <text y={20} textAnchor="middle" className="fill-ink" style={{ fontSize: 26, fontWeight: 600 }}>{center}</text>
       </svg>
       {total > 0 && (
-        <figcaption className="no-scrollbar mt-2 flex max-w-full gap-4 overflow-x-auto px-1 text-[15px]">
+        <figcaption className="mt-3 flex w-full flex-wrap justify-center gap-x-4 gap-y-1.5 px-1 text-[14px]">
           {parts.map((p, i) => (
             <span key={p.label} className="flex shrink-0 items-center gap-1.5">
               <span className="h-2.5 w-2.5 rounded-full" style={{ background: DONUT_COLORS[i % DONUT_COLORS.length] }} />

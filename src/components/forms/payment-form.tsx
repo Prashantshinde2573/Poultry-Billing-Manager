@@ -43,7 +43,7 @@ export function PaymentForm({ customers, suppliers, initialDir, initialParty, to
     () => recordPayment({ party_id: party, direction: dir, amount, method, reference: ref, payment_date: date, notes, confirm_overpayment: confirm }, key),
     (d) => {
       toast(`${t('pay.saved')} · ${t('b.balanceNow')} ${inr(d.balance)}`);
-      router.replace(dir === 'IN' ? `/customers/${party}` : `/suppliers/${party}?ledger=PAYABLE`);
+      router.replace(dir === 'IN' ? `/app/customers/${party}` : `/app/suppliers/${party}?ledger=PAYABLE`);
       router.refresh();
     },
     (r) => {
@@ -87,7 +87,7 @@ export function PaymentForm({ customers, suppliers, initialDir, initialParty, to
   return (
     <div className="mx-auto max-w-md space-y-5">
       <header className="flex items-center gap-3">
-        <IconCircle href={dir === 'IN' ? '/payments' : '/payments?tab=out'} label={t('c.back')}><ArrowLeft className="h-5 w-5" /></IconCircle>
+        <IconCircle href={dir === 'IN' ? '/app/payments' : '/app/payments?tab=out'} label={t('c.back')}><ArrowLeft className="h-5 w-5" /></IconCircle>
         <h1 className="flex-1 text-center text-[22px] font-semibold">{dir === 'IN' ? t('pay.receive') : t('pay.paySupplier')}</h1><span className="w-12" />
       </header>
       {suppliers && (

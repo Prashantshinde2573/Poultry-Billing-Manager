@@ -20,7 +20,7 @@ export function PartyList({ rows, kind }: { rows: PartyRow[]; kind: 'CUSTOMER' |
       .filter((r) => !s || r.name.toLowerCase().includes(s) || (d.length >= 3 && (r.phone ?? '').replace(/\D/g, '').includes(d)))
       .sort((a, b) => sort === 'dues' ? bal(b) - bal(a) : sort === 'recent' ? (b.last_activity ?? '').localeCompare(a.last_activity ?? '') : a.name.localeCompare(b.name));
   }, [rows, q, sort]); // eslint-disable-line react-hooks/exhaustive-deps
-  const base = kind === 'CUSTOMER' ? '/customers' : '/suppliers';
+  const base = kind === 'CUSTOMER' ? '/app/customers' : '/app/suppliers';
   return (
     <div>
       <div className="relative">

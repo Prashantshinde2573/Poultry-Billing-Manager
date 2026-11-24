@@ -12,9 +12,10 @@ export default {
       colors: {
         ink: { DEFAULT: '#0E2A2F', soft: '#334B50', muted: '#6B8187', faint: '#9DB0B4' },
         aqua: { DEFAULT: '#2BB5A8', light: '#5FD3C6', soft: '#E3F6F3', deep: '#16867C' },
-        mint: '#EAF8F4',
+        mint: '#EAF6F3',
+        canvas: '#F2F6F5',
         cream: '#FFFCF3',
-        line: '#E1ECEA',
+        line: '#E3EBE9',
         good: '#1E9E6A',
         bad: '#E0533D',
         warn: '#D98A1C',
@@ -27,7 +28,8 @@ export default {
       },
       borderRadius: { '4xl': '2rem' },
       boxShadow: {
-        card: '0 1px 2px rgba(14,42,47,0.04), 0 8px 24px -12px rgba(14,42,47,0.12)',
+        card: '0 1px 2px rgba(14,42,47,0.04)',
+        lift: '0 1px 2px rgba(14,42,47,0.04), 0 12px 32px -16px rgba(14,42,47,0.18)',
         float: '0 12px 32px -8px rgba(14,42,47,0.35)',
       },
     },

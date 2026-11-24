@@ -21,10 +21,11 @@ export async function middleware(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = path === '/login' || path === '/signup' || path.startsWith('/auth/');
-  if (!user && !isPublic) {
+  const isProtected = path === '/app' || path.startsWith('/app/') || path.startsWith('/driver') || path === '/change-password'
+    || path === '/suspended' || path === '/no-access' || (path.startsWith('/admin') && !path.startsWith('/admin/login'));
+  if (!user && isProtected) {
     const to = request.nextUrl.clone();
-    to.pathname = '/login';
+    to.pathname = path.startsWith('/admin') ? '/admin/login' : '/login';
     to.search = '';
     return NextResponse.redirect(to);
   }

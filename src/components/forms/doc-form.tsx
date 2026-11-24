@@ -61,7 +61,7 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
         : createPurchase({ ...common, supplier_id: party, purchase_date: date, vehicle_ref: vehicleRef, trip_id: trip }, key),
       (d: any) => {
         toast(kind === 'BILL' ? t('b.saved', { no: d.bill_no }) : t('pu.saved', { no: d.purchase_no }));
-        router.replace(kind === 'BILL' ? `/customers/${party}` : `/suppliers/${party}`);
+        router.replace(kind === 'BILL' ? `/app/customers/${party}` : `/app/suppliers/${party}`);
         router.refresh();
       },
     );
