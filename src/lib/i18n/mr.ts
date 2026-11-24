@@ -747,4 +747,9 @@ export const mr: Messages = {
   'ask.ex3': 'कालच्या ट्रिपमध्ये वजन घट किती झाली?',
   'ask.ex4': 'फार्मला किती पैसे द्यायचे बाकी आहेत?',
   'plan.mod.ai': 'विचारा (AI)',
+  'ask.history': 'इतिहास',
+  'ask.new': 'नवीन चॅट',
+  'ask.noHistory': 'अजून जुने चॅट नाहीत',
+  'ask.deleteChat': 'चॅट हटवा',
+  'ask.clearAll': 'सर्व चॅट हटवा',
 };

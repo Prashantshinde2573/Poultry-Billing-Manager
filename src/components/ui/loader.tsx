@@ -3,7 +3,7 @@ export function ChickenLoader({ size = 88, label }: { size?: number; label?: str
   return (
     <span className="inline-flex flex-col items-center gap-1" role="status" aria-live="polite">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/brand/loader.webp" width={size} height={size} alt="" className="select-none" draggable={false} />
+      <img src="/brand/loader-2.webp" width={size} height={size} alt="" className="select-none" draggable={false} />
       <span className={label ? 'text-[14px] font-medium text-ink-muted' : 'sr-only'}>{label ?? 'Loading'}</span>
     </span>
   );

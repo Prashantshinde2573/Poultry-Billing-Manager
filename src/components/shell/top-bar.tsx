@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bell, ChevronRight, Crown, History, LogOut, Settings, Sparkles } from 'lucide-react';
+import { Bell, ChevronRight, Crown, History, LogOut, Settings } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/client';
 import { Sheet } from '@/components/ui/sheet';
 import { Avatar } from '@/components/ui/core';
@@ -50,7 +50,7 @@ export function TopBar({ businessName, userName, roleLabel, planLabel, planNote,
           <div className="hidden flex-1 lg:block" />
           {ask && (
             <Link href="/app/ask" aria-label={t('nav.ask')} className="press flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-ink px-3.5 text-[14px] font-semibold text-white">
-              <Sparkles className="h-[18px] w-[18px]" /> <span className="hidden min-[420px]:inline">{t('nav.ask')}</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}<img src="/brand/ai-orb.webp" alt="" width={24} height={24} className="h-6 w-6 rounded-full" /> <span className="hidden min-[420px]:inline">{t('nav.ask')}</span>
             </Link>
           )}
           <Link href={notificationsHref} aria-label={unread ? `${t('nav.notifications')} (${unread})` : t('nav.notifications')}

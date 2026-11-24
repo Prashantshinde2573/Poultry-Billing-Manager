@@ -20,6 +20,7 @@
     "@types/qrcode": "^1.5.5",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.9",
+    "lottie-web": "5.12.2",
     "lucide-react": "0.460.0",
     "next": "15.5.29",
     "qrcode": "^1.5.4",

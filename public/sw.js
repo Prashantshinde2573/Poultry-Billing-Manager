@@ -3,7 +3,7 @@
  * files (/_next/static, icons, fonts). Pages and API responses contain business
  * data and are never cached (PRD §13).
  */
-const CACHE = 'poulgo-static-v2';
+const CACHE = 'poulgo-static-v3';
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));

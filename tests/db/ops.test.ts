@@ -143,3 +143,20 @@ describe('order straight onto a trip', () => {
     expect(acc.uid).toBe(w.owner);
   });
 });
+
+describe('ask history', () => {
+  it('owner saves, lists, reopens and deletes own chats; staff cannot', async () => {
+    const id = await w.db.rpc('ai_chat_save', { p_business_id: w.biz, p_id: null, p_messages: [{ role: 'user', text: 'Who owes most?' }, { role: 'assistant', text: 'Patil' }] });
+    await w.db.rpc('ai_chat_save', { p_business_id: w.biz, p_id: id, p_messages: [{ role: 'user', text: 'Who owes most?' }, { role: 'assistant', text: 'Patil' }, { role: 'user', text: 'and suppliers?' }] });
+    const list = await w.db.rpc('ai_chat_list', { p_business_id: w.biz });
+    expect(list).toHaveLength(1);
+    expect(list[0].title).toBe('Who owes most?');
+    expect(list[0].n).toBe(3);
+    expect((await w.db.rpc('ai_chat_get', { p_business_id: w.biz, p_id: id })).messages).toHaveLength(3);
+    await w.db.asUser(w.staff);
+    expect(await w.db.rpcError('ai_chat_list', { p_business_id: w.biz })).toMatch(/FORBIDDEN/);
+    await w.db.asUser(w.owner);
+    await w.db.rpc('ai_chat_delete', { p_business_id: w.biz, p_id: id });
+    expect(await w.db.rpc('ai_chat_list', { p_business_id: w.biz })).toHaveLength(0);
+  });
+});

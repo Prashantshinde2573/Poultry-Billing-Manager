@@ -766,6 +766,11 @@ export const en = {
   'ask.ex3': 'Weight loss in yesterday\'s trip?',
   'ask.ex4': 'How much do I owe the farms?',
   'plan.mod.ai': 'Ask (AI)',
+  'ask.history': 'History',
+  'ask.new': 'New chat',
+  'ask.noHistory': 'No saved chats yet',
+  'ask.deleteChat': 'Delete chat',
+  'ask.clearAll': 'Delete all chats',
 } as const;
 
 export type MessageKey = keyof typeof en;

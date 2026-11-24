@@ -13,7 +13,7 @@ export interface ChatTurn { role: 'user' | 'assistant'; text: string }
 const LANG = { mr: 'Marathi (मराठी, Devanagari script)', hi: 'Hindi (हिंदी, Devanagari script)', en: 'simple English' } as const;
 
 /** Ask a question about the business. Answers only from the business's own data, read-only. */
-export async function askAI(history: ChatTurn[]): Promise<{ ok: true; text: string; used: number; limit: number } | { ok: false; code: string; detail?: string }> {
+export async function askAI(history: ChatTurn[], chatId: string | null = null): Promise<{ ok: true; text: string; used: number; limit: number; chatId: string | null } | { ok: false; code: string; detail?: string }> {
   const ctx = await getCtx();
   if (!ctx?.businessId) return { ok: false, code: 'UNAUTHENTICATED' };
   if (ctx.role !== 'owner') return { ok: false, code: 'FORBIDDEN' };
@@ -47,8 +47,9 @@ export async function askAI(history: ChatTurn[]): Promise<{ ok: true; text: stri
       contents.push(reply); // send back unchanged (keeps thought signatures)
       const calls = reply.parts.filter((p) => p.functionCall);
       if (!calls.length) {
-        const text = reply.parts.filter((p) => p.text && !p.thought).map((p) => p.text).join('').trim();
-        return { ok: true, text: text || '—', used: q.data.used, limit: q.data.limit };
+        const text = reply.parts.filter((p) => p.text && !p.thought).map((p) => p.text).join('').trim() || '—';
+        const id = await saveChat(ctx.businessId, chatId, [...turns, { role: 'assistant', text }]);
+        return { ok: true, text, used: q.data.used, limit: q.data.limit, chatId: id };
       }
       const results = [];
       for (const c of calls) {
@@ -59,9 +60,43 @@ export async function askAI(history: ChatTurn[]): Promise<{ ok: true; text: stri
       }
       contents.push({ role: 'user', parts: results });
     }
-    return { ok: true, text: locale === 'en' ? 'That needed too many steps. Please ask a shorter question.' : 'उत्तर शोधायला खूप टप्पे लागले. कृपया छोटा प्रश्न विचारा.', used: q.data.used, limit: q.data.limit };
+    return { ok: true, text: locale === 'en' ? 'That needed too many steps. Please ask a shorter question.' : 'उत्तर शोधायला खूप टप्पे लागले. कृपया छोटा प्रश्न विचारा.', used: q.data.used, limit: q.data.limit, chatId };
   } catch (e) {
     await logError({ source: 'action', message: (e as Error).message, code: 'AI', path: '/app/ask' });
     return { ok: false, code: 'NETWORK' };
   }
+}
+
+const UUID = /^[0-9a-f-]{36}$/;
+
+async function saveChat(businessId: string, chatId: string | null, messages: ChatTurn[]): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc('ai_chat_save', { p_business_id: businessId, p_id: chatId && UUID.test(chatId) ? chatId : null, p_messages: messages });
+  return (data as string) ?? null;
+}
+
+/** The owner's past conversations (newest first). */
+export async function listChats(): Promise<{ id: string; title: string; at: string; n: number }[]> {
+  const ctx = await getCtx();
+  if (!ctx?.businessId || ctx.role !== 'owner') return [];
+  const supabase = await createClient();
+  const { data } = await supabase.rpc('ai_chat_list', { p_business_id: ctx.businessId });
+  return (data ?? []) as any[];
+}
+
+export async function getChat(id: string): Promise<{ id: string; messages: ChatTurn[] } | null> {
+  const ctx = await getCtx();
+  if (!ctx?.businessId || ctx.role !== 'owner' || !UUID.test(id)) return null;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc('ai_chat_get', { p_business_id: ctx.businessId, p_id: id });
+  return (data as any) ?? null;
+}
+
+/** Delete one conversation, or all of them (id = null). */
+export async function deleteChat(id: string | null) {
+  const ctx = await getCtx();
+  if (!ctx?.businessId || ctx.role !== 'owner') return { ok: false };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc('ai_chat_delete', { p_business_id: ctx.businessId, p_id: id && UUID.test(id) ? id : null });
+  return { ok: !error };
 }
