@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/core';
 import { useToast } from '@/components/ui/toast';
 import { createParty, updateParty } from '@/app/actions/parties';
 import { errorKey } from '@/lib/errors';
+import { safeNext, nav } from '@/components/shell/perm';
 
 type Kind = 'CUSTOMER' | 'SUPPLIER';
 export interface PartyFormInitial {
@@ -15,7 +16,7 @@ export interface PartyFormInitial {
   opening_receivable?: string | null; opening_payable?: string | null;
 }
 
-export function PartyForm({ kind, initial, canSuppliers, isOwner }: { kind: Kind; initial?: PartyFormInitial; canSuppliers: boolean; isOwner: boolean }) {
+export function PartyForm({ kind, initial, canSuppliers, isOwner, next, as }: { kind: Kind; initial?: PartyFormInitial; canSuppliers: boolean; isOwner: boolean; next?: string | null; as?: string | null }) {
   const { t } = useI18n();
   const toast = useToast();
   const router = useRouter();
@@ -50,7 +51,12 @@ export function PartyForm({ kind, initial, canSuppliers, isOwner }: { kind: Kind
     }
     toast(t('c.saved'));
     const id = editing ? initial!.id : (r.data as any).id;
-    router.replace(`/app/${kind === 'CUSTOMER' ? 'customers' : 'suppliers'}/${id}`);
+    const back = !editing ? safeNext(next) : null;
+    if (back) {
+      const u = new URL(back, location.origin);
+      if (as && /^[a-z_]{2,20}$/.test(as)) u.searchParams.set(as, id!);
+      nav(router, 'replace', u.pathname + u.search);
+    } else nav(router, 'replace', `/app/${kind === 'CUSTOMER' ? 'customers' : 'suppliers'}/${id}`);
     router.refresh();
   });
 

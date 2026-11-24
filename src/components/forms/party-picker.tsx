@@ -1,6 +1,8 @@
 'use client';
 import { useMemo, useState } from 'react';
-import { ChevronDown, Search } from 'lucide-react';
+import { ChevronDown, Search, UserPlus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { withNext, nav } from '@/components/shell/perm';
 import { useI18n } from '@/lib/i18n/client';
 import { inr } from '@/lib/format';
 import { Sheet } from '@/components/ui/sheet';
@@ -8,10 +10,13 @@ import { Avatar } from '@/components/ui/core';
 import type { PartyOpt } from '@/lib/data/queries';
 
 /** Big tappable party chooser with search (works well with hundreds of parties on a phone). */
-export function PartyPicker({ parties, value, onChange, label, showBalance = true }: {
+export function PartyPicker({ parties, value, onChange, label, showBalance = true, add }: {
   parties: PartyOpt[]; value: string; onChange: (id: string) => void; label: string; showBalance?: boolean;
+  /** last row "+ Add new …": opens the add screen and comes back with the new party selected */
+  add?: { kind: 'CUSTOMER' | 'SUPPLIER'; as: string; next?: string } | null;
 }) {
   const { t } = useI18n();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const sel = parties.find((p) => p.id === value);
@@ -49,6 +54,15 @@ export function PartyPicker({ parties, value, onChange, label, showBalance = tru
             </li>
           ))}
           {list.length === 0 && <li className="py-6 text-center text-sm text-ink-muted">{t('c.noResults')}</li>}
+          {add && (
+            <li>
+              <button type="button" onClick={() => { setOpen(false); nav(router, 'push', (add.next ? `${add.kind === 'CUSTOMER' ? '/app/customers/new' : '/app/suppliers/new'}?next=${encodeURIComponent(add.next)}&as=${add.as}` : withNext(add.kind === 'CUSTOMER' ? '/app/customers/new' : '/app/suppliers/new', add.as)) + (q.trim() ? `&name=${encodeURIComponent(q.trim())}` : '')); }}
+                className="press flex w-full items-center gap-3 py-3 text-left font-semibold text-aqua-deep">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-aqua-soft"><UserPlus className="h-5 w-5" /></span>
+                {add.kind === 'CUSTOMER' ? t('add.customer') : t('add.supplier')}
+              </button>
+            </li>
+          )}
         </ul>
       </Sheet>
     </div>

@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n/client';
 import { localName } from '@/lib/i18n';
 import { Button } from '@/components/ui/core';
 import { SelectInput, TextArea, TextInput } from '@/components/ui/fields';
+import { usePerm, nav } from '@/components/shell/perm';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
 import { createOrder } from '@/app/actions/ops';
@@ -16,6 +17,7 @@ interface Line { k: number; bird_size_id: string; qty: string; expected_weight: 
 
 export function OrderForm({ parties, sizes, initialParty = '', today }: { parties: PartyOpt[]; sizes: SizeOpt[]; initialParty?: string; today: string }) {
   const { t, locale } = useI18n();
+  const perm = usePerm();
   const toast = useToast();
   const router = useRouter();
   const key = useMemo(() => crypto.randomUUID(), []);
@@ -34,21 +36,21 @@ export function OrderForm({ parties, sizes, initialParty = '', today }: { partie
     if (!items.length) return setErr(t('err.required') + ': ' + t('c.birds'));
     run(() => createOrder({ customer_id: party, order_date: date, notes, draft, items }, key), (d) => {
       toast(t('o.saved', { no: d.order_no }));
-      router.replace(`/app/orders/${d.id}`);
+      nav(router, 'replace', `/app/orders/${d.id}`);
       router.refresh();
     });
   };
 
   return (
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); submit(false); }}>
-      <PartyPicker parties={parties} value={party} onChange={setParty} label={t('c.customer')} />
+      <PartyPicker parties={parties} value={party} onChange={setParty} label={t('c.customer')} add={{ kind: 'CUSTOMER', as: 'customer' }} />
       <TextInput type="date" label={t('c.date')} value={date} onChange={(e) => setDate(e.target.value)} required />
       {lines.map((l) => {
         const s = sizes.find((x) => x.id === l.bird_size_id);
         return (
           <div key={l.k} className="card space-y-3 p-4">
             <div className="flex items-end gap-2">
-              <SelectInput className="flex-1" label={t('c.size')} value={l.bird_size_id} onChange={(e) => upd(l.k, { bird_size_id: e.target.value })}>
+              <SelectInput className="flex-1" label={t('c.size')} addNew={perm.owner ? { label: t('add.size'), to: '/app/settings?add=size' } : null} value={l.bird_size_id} onChange={(e) => upd(l.k, { bird_size_id: e.target.value })}>
                 {sizes.filter((x) => x.id === l.bird_size_id || !used.has(x.id)).map((x) => <option key={x.id} value={x.id}>{localName(x, locale)}</option>)}
               </SelectInput>
               {lines.length > 1 && <button type="button" aria-label={t('c.remove')} onClick={() => setLines((ls) => ls.filter((x) => x.k !== l.k))} className="press mb-1 rounded-full p-2.5 text-bad hover:bg-bad/10"><Trash2 className="h-5 w-5" /></button>}
@@ -61,7 +63,6 @@ export function OrderForm({ parties, sizes, initialParty = '', today }: { partie
           </div>
         );
       })}
-      <p className="text-xs text-ink-muted">{t('o.rateHint')}</p>
       {lines.length < sizes.length && (
         <Button variant="outline" className="w-full" onClick={() => { const s = sizes.find((x) => !used.has(x.id)); if (s) setLines((ls) => [...ls, { k: Date.now(), bird_size_id: s.id, qty: '', expected_weight: '', rate: '' }]); }}>
           <Plus className="h-5 w-5" /> {t('c.addLine')}

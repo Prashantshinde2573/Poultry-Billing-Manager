@@ -6,9 +6,11 @@ import { Sidebar, BottomNav } from '@/components/shell/office-nav';
 import { TopBar } from '@/components/shell/top-bar';
 import { NAV, NEW_ENTRY, allowed } from '@/components/shell/nav-items';
 import { PlanBanner } from '@/components/shell/plan-banner';
-import { myNotifications, planNote } from '@/lib/data/notifications';
+import { myNotifications, planNote, prefetchNotifications } from '@/lib/data/notifications';
+import { PermProvider } from '@/components/shell/perm';
 
 export default async function OfficeLayout({ children }: { children: ReactNode }) {
+  prefetchNotifications(1);
   const ctx = await requireCtx({ office: true });
   const [{ t, locale }, notes] = await Promise.all([getT(), myNotifications(ctx, 1)]);
   const planLabel = ctx.plan.id === 'trial' ? t('plan.trial') : localName(ctx.plan, locale);
@@ -21,7 +23,7 @@ export default async function OfficeLayout({ children }: { children: ReactNode }
         <TopBar businessName={ctx.businessName} userName={ctx.name} roleLabel={t(`set.role.${ctx.role}`)} planLabel={planLabel}
           planNote={note.text} planTone={note.tone} owner={ctx.role === 'owner'} unread={notes.unread} />
         <PlanBanner ctx={ctx} t={t} locale={locale} />
-        {children}
+        <PermProvider value={{ owner: ctx.role === 'owner', modules: ctx.plan.modules, perms: ctx.perms }}>{children}</PermProvider>
       </main>
       <BottomNav newItems={allowed(NEW_ENTRY, ctx.role, ctx.perms, ctx.plan.modules)} showTrips={ctx.has('trips')} />
     </div>

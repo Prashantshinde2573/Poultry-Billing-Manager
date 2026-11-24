@@ -1,4 +1,5 @@
 'use client';
+import { nav } from '@/components/shell/perm';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/core';
@@ -18,7 +19,7 @@ export function SetupForm() {
         const r = await setupSuperAdmin(f.email, f.password, f.name);
         if (!r.ok) return r;
         return signIn(f.email, f.password, 'admin');
-      }, () => { router.replace('/admin'); router.refresh(); });
+      }, () => { nav(router, 'replace', '/admin'); router.refresh(); });
     }}>
       <p className="text-[14px] text-ink-muted">Use the email you put in SUPER_ADMIN_EMAILS. This form disappears once the super admin exists.</p>
       <TextInput label="Your name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} required />

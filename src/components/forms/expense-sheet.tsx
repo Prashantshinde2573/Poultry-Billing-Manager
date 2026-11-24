@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n/client';
 import { localName } from '@/lib/i18n';
 import { Button } from '@/components/ui/core';
 import { SelectInput, TextInput } from '@/components/ui/fields';
+import { usePerm, nav } from '@/components/shell/perm';
 import { Sheet } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
@@ -17,6 +18,7 @@ export function ExpenseSheet({ cats, trips, today, startOpen, startTrip }: {
   cats: Cat[]; trips: { id: string; trip_no: string }[]; today: string; startOpen: boolean; startTrip: string;
 }) {
   const { t, locale } = useI18n();
+  const perm = usePerm();
   const toast = useToast();
   const router = useRouter();
   const path = usePathname();
@@ -27,7 +29,7 @@ export function ExpenseSheet({ cats, trips, today, startOpen, startTrip }: {
   const [f, setF] = useState(blank);
   const [dup, setDup] = useState(false);
   const { pending, err, run } = useSubmit();
-  const close = () => { setOpen(false); if (startOpen) router.replace(path); };
+  const close = () => { setOpen(false); if (startOpen) nav(router, 'replace', path); };
   const save = (confirm: boolean) => run(() => createExpense({ ...f, confirm_duplicate: confirm }, key), () => {
     toast(t('e.saved')); setF(blank()); setKey(crypto.randomUUID()); setDup(false); close(); router.refresh();
   }, (r) => { if (r.code === 'POSSIBLE_DUPLICATE') { setDup(true); return true; } });
@@ -40,12 +42,12 @@ export function ExpenseSheet({ cats, trips, today, startOpen, startTrip }: {
         <div className="space-y-3">
           <TextInput label={t('c.amount')} inputMode="decimal" prefix="₹" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} autoFocus className="text-lg" />
           <div className="grid grid-cols-2 gap-2">
-            <SelectInput label={t('e.category')} value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
+            <SelectInput label={t('e.category')} addNew={perm.owner ? { label: t('add.category'), to: '/app/settings?add=category' } : null} value={f.category_id} onChange={(e) => setF({ ...f, category_id: e.target.value })}>
               {active.map((c) => <option key={c.id} value={c.id}>{localName(c, locale)}</option>)}
             </SelectInput>
             <TextInput type="date" label={t('c.date')} value={f.expense_date} max={today} onChange={(e) => setF({ ...f, expense_date: e.target.value })} />
           </div>
-          <SelectInput label={t('e.tripOptional')} value={f.trip_id} onChange={(e) => setF({ ...f, trip_id: e.target.value })}>
+          <SelectInput label={t('e.tripOptional')} addNew={perm.has('trips') ? { label: t('add.trip'), to: '/app/trips/new' } : null} value={f.trip_id} onChange={(e) => setF({ ...f, trip_id: e.target.value })}>
             <option value="">—</option>{trips.map((x) => <option key={x.id} value={x.id}>{x.trip_no}</option>)}
           </SelectInput>
           <TextInput label={t('c.notes')} value={f.note} onChange={(e) => setF({ ...f, note: e.target.value })} />

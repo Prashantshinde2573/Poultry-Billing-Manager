@@ -6,9 +6,17 @@ import type { Ctx } from '@/lib/session';
 export interface Notice { id: string; kind: string; params: Record<string, any>; link: string | null; at: string; unread: boolean }
 
 /** Notifications for the signed-in person, plus a "plan ending" reminder for owners. */
-export const myNotifications = cache(async (ctx: Ctx | null, limit = 30): Promise<{ items: Notice[]; unread: number }> => {
+const raw = cache(async (limit: number) => {
   const supabase = await createClient();
   const { data } = await supabase.rpc('my_notifications', { p_limit: limit });
+  return data as { items: Notice[]; unread: number } | null;
+});
+
+/** Starts the query early (in parallel with the session lookup). */
+export const prefetchNotifications = (limit: number) => { void raw(limit); };
+
+export async function myNotifications(ctx: Ctx | null, limit = 30): Promise<{ items: Notice[]; unread: number }> {
+  const data = await raw(limit);
   const items = ((data?.items ?? []) as Notice[]).slice();
   let unread = Number(data?.unread ?? 0);
   if (ctx?.businessId && ctx.role === 'owner' && ctx.plan.id && ctx.state !== 'SUSPENDED' && ctx.daysLeft <= 7) {
@@ -16,7 +24,7 @@ export const myNotifications = cache(async (ctx: Ctx | null, limit = 30): Promis
     unread += 1;
   }
   return { items, unread };
-});
+}
 
 export function planNote(ctx: Ctx, t: (k: any, p?: any) => string): { text: string; tone: 'good' | 'warn' | 'bad' } {
   if (ctx.state === 'ACTIVE') {

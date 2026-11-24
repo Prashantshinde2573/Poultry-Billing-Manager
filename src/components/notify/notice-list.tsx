@@ -31,7 +31,7 @@ export function noticeText(n: Notice, t: TFn, locale: Locale) {
 }
 
 export function NoticeList({ items, t, locale }: { items: Notice[]; t: TFn; locale: Locale }) {
-  if (!items.length) return <Empty icon={<Bell className="h-6 w-6" />} title={t('notif.empty')} sub={t('notif.emptySub')} />;
+  if (!items.length) return <Empty icon={<Bell className="h-6 w-6" />} title={t('notif.empty')} />;
   const fresh = items.filter((i) => i.unread);
   const old = items.filter((i) => !i.unread);
   const block = (list: Notice[], label: string) => list.length > 0 && (

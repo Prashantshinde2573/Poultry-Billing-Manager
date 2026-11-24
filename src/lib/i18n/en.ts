@@ -708,6 +708,15 @@ export const en = {
   'err.pageSub': 'We have noted the problem. Try again, or go back home.',
   'err.retry': 'Try again',
   'err.home': 'Go home',
+  'add.customer': 'Add new customer',
+  'add.supplier': 'Add new supplier',
+  'add.driver': 'Add new driver',
+  'add.vehicle': 'Add new vehicle',
+  'add.size': 'Add new size',
+  'add.category': 'Add new category',
+  'add.trip': 'Start new trip',
+  'c.slow': 'Slow internet. Trying again…',
+  'set.license': 'Licence no. (optional)',
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowDownLeft, ArrowUpRight, Plus, ArrowLeftRight, Truck, ChevronRight, AlertTriangle, ReceiptText } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, HandCoins, Wallet, Truck, ChevronRight, AlertTriangle, ReceiptText } from 'lucide-react';
 import { requireCtx } from '@/lib/session';
 import { getT } from '@/lib/i18n/server';
 import { localName } from '@/lib/i18n';
@@ -35,8 +35,8 @@ export default async function Dashboard() {
             <div className="mt-1 flex items-center justify-between gap-3">
               <p className="tabular min-w-0 truncate text-[38px] font-semibold leading-none tracking-[-0.03em] sm:text-[44px]">{inr(d.receivable_total, { decimals: false })}</p>
               <div className="flex shrink-0 gap-2">
-                <ActionSquare href="/app/payments/new" label={t('qa.payment')}><Plus className="h-6 w-6" /></ActionSquare>
-                <ActionSquare href={trips ? '/app/trips' : '/app/payments'} label={trips ? t('nav.trips') : t('nav.payments')}><ArrowLeftRight className="h-5 w-5" /></ActionSquare>
+                <ActionSquare href="/app/payments/new" label={t('qa.payment')}><HandCoins className="h-6 w-6" /></ActionSquare>
+                <ActionSquare href={trips ? '/app/trips' : '/app/payments'} label={trips ? t('nav.trips') : t('nav.payments')}>{trips ? <Truck className="h-6 w-6" /> : <Wallet className="h-6 w-6" />}</ActionSquare>
               </div>
             </div>
             <p className="mt-2 text-[13.5px] text-ink-muted">{t('dash.customersWithDues', { n: d.customers_with_dues })}</p>

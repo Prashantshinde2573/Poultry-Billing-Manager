@@ -1,5 +1,7 @@
 'use client';
 import { useId, type ComponentProps, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
+import { withNext, nav } from '@/components/shell/perm';
 
 export function Field({ label, error, hint, children, className = '' }: { label?: ReactNode; error?: string | null; hint?: ReactNode; children: (id: string) => ReactNode; className?: string }) {
   const id = useId();
@@ -26,10 +28,18 @@ export function TextInput({ label, error, hint, className, prefix, suffix, ...re
   );
 }
 
-export function SelectInput({ label, error, hint, className, children, ...rest }: ComponentProps<'select'> & { label?: ReactNode; error?: string | null; hint?: ReactNode }) {
+/** Native select. `addNew` adds a last "+ Add …" option that opens the add screen and comes back. */
+export function SelectInput({ label, error, hint, className, children, addNew, onChange, ...rest }: ComponentProps<'select'> & { label?: ReactNode; error?: string | null; hint?: ReactNode; addNew?: { label: string; to: string; as?: string } | null }) {
+  const router = useRouter();
   return (
     <Field label={label} error={error} hint={hint} className={className}>
-      {(id) => <select id={id} className={`input appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 fill=%22none%22 stroke=%22%236B8187%22 stroke-width=%222%22><path d=%22m6 8 4 4 4-4%22/></svg>')] bg-[right_12px_center] bg-no-repeat pr-10 ${error ? 'border-bad' : ''}`} {...rest}>{children}</select>}
+      {(id) => (
+        <select id={id} className={`input appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2220%22 height=%2220%22 fill=%22none%22 stroke=%22%236B8187%22 stroke-width=%222%22><path d=%22m6 8 4 4 4-4%22/></svg>')] bg-[right_12px_center] bg-no-repeat pr-10 ${error ? 'border-bad' : ''}`}
+          onChange={(e) => { if (addNew && e.target.value === '__add__') { nav(router, 'push', withNext(addNew.to, addNew.as)); return; } onChange?.(e); }} {...rest}>
+          {children}
+          {addNew && <option value="__add__">＋ {addNew.label}</option>}
+        </select>
+      )}
     </Field>
   );
 }

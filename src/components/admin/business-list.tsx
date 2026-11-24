@@ -1,4 +1,5 @@
 'use client';
+import { nav } from '@/components/shell/perm';
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -88,7 +89,7 @@ function AddBusiness({ open, onClose, plans }: { open: boolean; onClose: () => v
   const share = done ? `PoulGo login for ${f.name}\nOpen: ${typeof window !== 'undefined' ? window.location.origin : ''}/login\nMobile / email: ${done.login}\nTemporary password: ${done.password}\nYou will set your own password after signing in.` : '';
   return (
     <Sheet open={open} onClose={close} title={done ? 'Business created' : 'Add business'} wide
-      footer={done ? <><Button variant="outline" onClick={close}>Close</Button><Button onClick={() => { router.push(`/admin/businesses/${done.id}`); close(); }}>Open business</Button></>
+      footer={done ? <><Button variant="outline" onClick={close}>Close</Button><Button onClick={() => { nav(router, 'push', `/admin/businesses/${done.id}`); close(); }}>Open business</Button></>
         : <><Button variant="outline" onClick={close}>Cancel</Button><Button disabled={pending} onClick={() => run(() => adminCreateBusiness({ ...f, months: Number(f.months), trial_days: Number(f.trial_days) }), (d) => { setDone(d); router.refresh(); })}>{pending ? 'Creating…' : 'Create business and login'}</Button></>}>
       {done ? (
         <div className="space-y-4">

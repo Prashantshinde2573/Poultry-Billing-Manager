@@ -1,4 +1,5 @@
 'use client';
+import { nav } from '@/components/shell/perm';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
@@ -43,7 +44,7 @@ export function PaymentForm({ customers, suppliers, initialDir, initialParty, to
     () => recordPayment({ party_id: party, direction: dir, amount, method, reference: ref, payment_date: date, notes, confirm_overpayment: confirm }, key),
     (d) => {
       toast(`${t('pay.saved')} · ${t('b.balanceNow')} ${inr(d.balance)}`);
-      router.replace(dir === 'IN' ? `/app/customers/${party}` : `/app/suppliers/${party}?ledger=PAYABLE`);
+      nav(router, 'replace', dir === 'IN' ? `/app/customers/${party}` : `/app/suppliers/${party}?ledger=PAYABLE`);
       router.refresh();
     },
     (r) => {
@@ -103,7 +104,8 @@ export function PaymentForm({ customers, suppliers, initialDir, initialParty, to
           ))}
         </div>
       )}
-      <PartyPicker parties={parties} value={party} onChange={setParty} label={dir === 'IN' ? t('c.customer') : t('c.supplier')} />
+      <PartyPicker parties={parties} value={party} onChange={setParty} label={dir === 'IN' ? t('c.customer') : t('c.supplier')}
+        add={{ kind: dir === 'IN' ? 'CUSTOMER' : 'SUPPLIER', as: 'party', next: `/app/payments/new?dir=${dir}` }} />
       <AmountPad value={amount} onChange={setAmount} chips={chips} />
       <ErrorBox msg={err} />
       <Button size="lg" className="h-16 w-full rounded-[22px] text-lg" disabled={!party || !(Number(amount) > 0)}

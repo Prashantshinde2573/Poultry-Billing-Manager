@@ -1,4 +1,5 @@
 'use client';
+import { nav } from '@/components/shell/perm';
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { useI18n } from '@/lib/i18n/client';
@@ -20,7 +21,7 @@ export function LoginForm({ area = 'app' }: { area?: 'app' | 'admin' }) {
       start(async () => {
         const r = await signIn(id, pw, area);
         if (!r.ok) { setErr(t(r.code === 'NOT_ADMIN' ? 'err.NOT_ADMIN' : 'auth.invalid')); return; }
-        router.replace(r.data.to);
+        nav(router, 'replace', r.data.to);
         router.refresh();
       });
     }}>

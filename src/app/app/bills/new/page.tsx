@@ -15,7 +15,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
   const [parties, sizes] = await Promise.all([partyOptions(ctx, 'CUSTOMER'), sizesWithRates(ctx, 'SALE', today)]);
   return (
     <div className="mx-auto max-w-xl">
-      <PageHeader back={sp.customer ? `/app/customers/${sp.customer}` : '/app'} title={t('b.title')} sub={t('b.sub')} />
+      <PageHeader back={sp.customer ? `/app/customers/${sp.customer}` : '/app'} title={t('b.title')} />
       <DocForm kind="BILL" parties={parties} sizes={sizes} initialParty={sp.customer ?? ''} today={today} canOverride={ctx.can('rate_override')} />
     </div>
   );

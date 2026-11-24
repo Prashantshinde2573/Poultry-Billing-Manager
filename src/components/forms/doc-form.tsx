@@ -7,6 +7,7 @@ import { localName } from '@/lib/i18n';
 import { inr, lineAmount } from '@/lib/format';
 import { Button } from '@/components/ui/core';
 import { SelectInput, TextArea, TextInput } from '@/components/ui/fields';
+import { usePerm, nav } from '@/components/shell/perm';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
 import { createDirectBill, createPurchase } from '@/app/actions/money';
@@ -24,6 +25,7 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
   initialParty?: string; today: string; canOverride: boolean;
 }) {
   const { t, locale } = useI18n();
+  const perm = usePerm();
   const toast = useToast();
   const router = useRouter();
   const key = useMemo(() => crypto.randomUUID(), []);
@@ -61,7 +63,7 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
         : createPurchase({ ...common, supplier_id: party, purchase_date: date, vehicle_ref: vehicleRef, trip_id: trip }, key),
       (d: any) => {
         toast(kind === 'BILL' ? t('b.saved', { no: d.bill_no }) : t('pu.saved', { no: d.purchase_no }));
-        router.replace(kind === 'BILL' ? `/app/customers/${party}` : `/app/suppliers/${party}`);
+        nav(router, 'replace', kind === 'BILL' ? `/app/customers/${party}` : `/app/suppliers/${party}`);
         router.refresh();
       },
     );
@@ -69,13 +71,14 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
 
   return (
     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); submit(); }}>
-      <PartyPicker parties={parties} value={party} onChange={pickParty} label={kind === 'BILL' ? t('c.customer') : t('c.supplier')} />
+      <PartyPicker parties={parties} value={party} onChange={pickParty} label={kind === 'BILL' ? t('c.customer') : t('c.supplier')}
+        add={kind === 'BILL' ? { kind: 'CUSTOMER', as: 'customer' } : { kind: 'SUPPLIER', as: 'supplier' }} />
       <div className="grid grid-cols-2 gap-3">
         <TextInput type="date" label={t('c.date')} value={date} max={today} onChange={(e) => setDate(e.target.value)} required />
         {kind === 'PURCHASE' && <TextInput label={t('pu.vehicleRef')} value={vehicleRef} onChange={(e) => setVehicleRef(e.target.value)} />}
       </div>
       {kind === 'PURCHASE' && trips.length > 0 && (
-        <SelectInput label={`${t('c.trip')} (${t('c.optional')})`} value={trip} onChange={(e) => setTrip(e.target.value)}>
+        <SelectInput label={`${t('c.trip')} (${t('c.optional')})`} addNew={perm.has('trips') ? { label: t('add.trip'), to: '/app/trips/new' } : null} value={trip} onChange={(e) => setTrip(e.target.value)}>
           <option value="">—</option>
           {trips.map((x) => <option key={x.id} value={x.id}>{x.trip_no}</option>)}
         </SelectInput>
@@ -85,7 +88,7 @@ export function DocForm({ kind, parties, sizes, trips = [], initialParty = '', t
         {lines.map((l, i) => (
           <div key={l.k} className="card space-y-3 p-4">
             <div className="flex items-end gap-2">
-              <SelectInput className="flex-1" label={t('c.size')} value={l.bird_size_id}
+              <SelectInput className="flex-1" label={t('c.size')} addNew={perm.owner ? { label: t('add.size'), to: '/app/settings?add=size' } : null} value={l.bird_size_id}
                 onChange={(e) => upd(l.k, { bird_size_id: e.target.value, rate: l.rate === '' || l.rate === defaultRate(l.bird_size_id) ? defaultRate(e.target.value) ?? '' : l.rate })}>
                 {kind === 'BILL' && <option value="">—</option>}
                 {sizes.map((s) => <option key={s.id} value={s.id}>{localName(s, locale)}</option>)}

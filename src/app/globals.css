@@ -16,10 +16,6 @@
   html, body { overflow-x: clip; }
   body {
     @apply min-h-screen bg-canvas font-sans text-[16px] leading-normal text-ink antialiased;
-    /* one soft aqua wash at the top of the page, then a calm solid canvas */
-    background-image: radial-gradient(120% 420px at 10% -80px, #D3F0EA 0%, rgba(211, 240, 234, 0) 70%),
-      radial-gradient(80% 360px at 100% -60px, #DDEFF6 0%, rgba(221, 239, 246, 0) 70%);
-    background-repeat: no-repeat;
     overscroll-behavior-y: none;
   }
   input, select, textarea, button { font: inherit; }
@@ -72,3 +68,4 @@
 @keyframes hisab-in { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
 .hisab-in { animation: hisab-in 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s both; }
 @media (prefers-reduced-motion: reduce) { .hisab-in { animation: none; } }
+@keyframes navbar { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }

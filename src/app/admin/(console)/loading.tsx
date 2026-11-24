@@ -1,2 +1,2 @@
-import { PageSkeleton } from '@/components/ui/skeleton';
-export default function Loading() { return <PageSkeleton hero={false} rows={8} />; }
+import { ScreenLoader } from '@/components/ui/loader';
+export default function Loading() { return <ScreenLoader />; }

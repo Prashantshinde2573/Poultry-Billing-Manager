@@ -10,5 +10,3 @@ coverage
 .vercel
 supabase/.temp
 supabase/.branches
-_update/
-_to_delete/

@@ -1,6 +1,7 @@
 'use client';
-import { useState, type ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { safeNext, nav } from '@/components/shell/perm';
 import { ChevronRight, KeyRound, Plus } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/client';
 import { localName } from '@/lib/i18n';
@@ -16,7 +17,19 @@ function useDone(close: () => void) {
   const { t } = useI18n();
   const toast = useToast();
   const router = useRouter();
-  return () => { toast(t('c.saved')); close(); router.refresh(); };
+  const sp = useSearchParams();
+  return () => {
+    toast(t('c.saved')); close();
+    const back = safeNext(sp.get('next'));
+    if (back) nav(router, 'push', back); else router.refresh();
+  };
+}
+
+/** Opens an "add" sheet straight away when the screen was opened with ?add=<what> (from a form's "+ Add new"). */
+function useAutoAdd(what: string, open: () => void) {
+  const sp = useSearchParams();
+  const want = sp.get('add') === what;
+  useEffect(() => { if (want) open(); }, [want]); // eslint-disable-line react-hooks/exhaustive-deps
 }
 
 function Check({ label, checked, onChange }: { label: ReactNode; checked: boolean; onChange: (v: boolean) => void }) {
@@ -92,6 +105,7 @@ export function SizesSection({ sizes, today }: { sizes: Size[]; today: string })
   const close = () => { setEdit(null); setRateS(null); };
   const done = useDone(close);
   const { pending, err, run } = useSubmit();
+  useAutoAdd('size', () => setEdit({ name: '', name_mr: '', name_hi: '', sort_order: sizes.length + 1, active: true }));
   return (
     <ListCard title={t('set.sizes')} onAdd={() => setEdit({ name: '', name_mr: '', name_hi: '', sort_order: sizes.length + 1, active: true })}>
       {sizes.map((s) => (
@@ -148,6 +162,8 @@ export function FleetSection({ vehicles, drivers }: { vehicles: Vehicle[]; drive
   const close = () => { setV(null); setD(null); };
   const done = useDone(close);
   const { pending, err, run } = useSubmit();
+  useAutoAdd('vehicle', () => setV({ registration_no: '', ownership: 'OWNED', description: '', active: true }));
+  useAutoAdd('driver', () => setD({ name: '', phone: '', license_no: '', active: true }));
   return (
     <div id="fleet" className="grid gap-4 lg:grid-cols-2">
       <ListCard title={t('set.vehicles')} onAdd={() => setV({ registration_no: '', ownership: 'OWNED', description: '', active: true })}>
@@ -173,7 +189,7 @@ export function FleetSection({ vehicles, drivers }: { vehicles: Vehicle[]; drive
         {d && <div className="space-y-3">
           <TextInput label={t('c.name')} value={d.name} onChange={(e) => setD({ ...d, name: e.target.value })} />
           <TextInput label={t('c.phone')} inputMode="tel" value={d.phone ?? ''} onChange={(e) => setD({ ...d, phone: e.target.value })} />
-          <TextInput label="License" value={d.license_no ?? ''} onChange={(e) => setD({ ...d, license_no: e.target.value })} />
+          <TextInput label={t('set.license')} value={d.license_no ?? ''} onChange={(e) => setD({ ...d, license_no: e.target.value })} />
           <Check label={t('c.active')} checked={d.active} onChange={(a) => setD({ ...d, active: a })} />
           <ErrorBox msg={err} />
         </div>}
@@ -250,6 +266,7 @@ export function CategoriesSection({ cats }: { cats: Cat[] }) {
   const [c, setC] = useState<Cat | null>(null);
   const done = useDone(() => setC(null));
   const { pending, err, run } = useSubmit();
+  useAutoAdd('category', () => setC({ name: '', name_mr: '', name_hi: '', is_trip_cost: false, active: true }));
   return (
     <ListCard title={t('set.categories')} onAdd={() => setC({ name: '', name_mr: '', name_hi: '', is_trip_cost: false, active: true })}>
       {cats.map((x) => <Item key={x.id} title={localName(x, locale)} sub={x.is_trip_cost ? t('set.tripCost') : undefined} right={!x.active ? <Badge>{t('c.inactive')}</Badge> : undefined} onClick={() => setC(x)} />)}

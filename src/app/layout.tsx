@@ -6,6 +6,8 @@ import { I18nProvider } from '@/lib/i18n/client';
 import { ToastProvider } from '@/components/ui/toast';
 import { SwRegister } from '@/components/sw-register';
 import { ErrorReporter } from '@/components/error-reporter';
+import { Suspense } from 'react';
+import { NavProgress } from '@/components/nav-progress';
 
 export const metadata: Metadata = {
   title: { default: 'PoulGo', template: '%s · PoulGo' },
@@ -26,6 +28,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
       <body>
         <I18nProvider locale={locale} messages={messages}>
           <ToastProvider>{children}</ToastProvider>
+          <Suspense fallback={null}><NavProgress /></Suspense>
         </I18nProvider>
         <SwRegister />
         <ErrorReporter />

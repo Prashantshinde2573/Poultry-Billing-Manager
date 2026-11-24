@@ -18,7 +18,7 @@ export default async function Page() {
   ]);
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <PageHeader title={t('act.title')} sub={t('act.sub')} />
+      <PageHeader title={t('act.title')} />
       <ActivityFeed first={first} members={members.map((m: any) => ({ id: m.user_id, name: m.display_name || t(`set.role.${m.role}` as any) }))} />
     </div>
   );

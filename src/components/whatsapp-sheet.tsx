@@ -32,7 +32,6 @@ export function WhatsAppSheet({ open, onClose, phone, text, partyId, type, date 
       <p className="mb-2 text-sm text-ink-muted">{t('wa.edit')}</p>
       <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={12}
         className="input h-auto whitespace-pre-wrap py-3 font-[inherit] text-[15px] leading-relaxed" aria-label={t('wa.preview')} />
-      <p className="mt-2 text-xs text-ink-muted">{t('wa.note')}</p>
     </Sheet>
   );
 }

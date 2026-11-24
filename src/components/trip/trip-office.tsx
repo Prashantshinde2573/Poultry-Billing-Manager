@@ -6,6 +6,7 @@ import { useI18n } from '@/lib/i18n/client';
 import { inr, num } from '@/lib/format';
 import { Avatar, Badge, Button } from '@/components/ui/core';
 import { SelectInput, Segmented, TextArea, TextInput } from '@/components/ui/fields';
+import { usePerm } from '@/components/shell/perm';
 import { Sheet } from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
@@ -53,6 +54,7 @@ export function TripEditButton({ trip, drivers, vehicles }: {
   drivers: { id: string; name: string }[]; vehicles: { id: string; registration_no: string }[];
 }) {
   const { t } = useI18n();
+  const perm = usePerm();
   const done = useDone();
   const [open, setOpen] = useState(false);
   const [f, setF] = useState({ trip_date: trip.trip_date, driver_id: trip.driver_id ?? '', vehicle_id: trip.vehicle_id ?? '', notes: trip.notes ?? '' });
@@ -65,10 +67,10 @@ export function TripEditButton({ trip, drivers, vehicles }: {
           <Button disabled={pending} onClick={() => run(() => updateTrip(trip.id, trip.version, f), () => { setOpen(false); done(); })}>{t('c.save')}</Button></>}>
         <div className="space-y-3">
           <TextInput type="date" label={t('c.date')} value={f.trip_date} onChange={(e) => setF({ ...f, trip_date: e.target.value })} />
-          <SelectInput label={t('c.driver')} value={f.driver_id} onChange={(e) => setF({ ...f, driver_id: e.target.value })}>
+          <SelectInput label={t('c.driver')} addNew={perm.owner ? { label: t('add.driver'), to: '/app/settings?add=driver' } : null} value={f.driver_id} onChange={(e) => setF({ ...f, driver_id: e.target.value })}>
             <option value="">—</option>{drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </SelectInput>
-          <SelectInput label={t('c.vehicle')} value={f.vehicle_id} onChange={(e) => setF({ ...f, vehicle_id: e.target.value })}>
+          <SelectInput label={t('c.vehicle')} addNew={perm.owner ? { label: t('add.vehicle'), to: '/app/settings?add=vehicle' } : null} value={f.vehicle_id} onChange={(e) => setF({ ...f, vehicle_id: e.target.value })}>
             <option value="">—</option>{vehicles.map((v) => <option key={v.id} value={v.id}>{v.registration_no}</option>)}
           </SelectInput>
           <TextArea label={t('c.notes')} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} />
