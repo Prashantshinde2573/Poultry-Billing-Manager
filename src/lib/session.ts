@@ -43,13 +43,17 @@ const PERM_MODULE: Partial<Record<Perm, Module>> = { suppliers: 'suppliers', exp
 /** The signed-in user's account (membership + plan). Cached per request. */
 export const getCtx = cache(async (): Promise<Ctx | null> => {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
+  // getClaims verifies the session JWT locally (signing keys are cached), so a page
+  // needs no extra round trip to the auth server; my_account then loads everything else.
+  const { data: cl } = await supabase.auth.getClaims();
+  const c = cl?.claims as { sub?: string; email?: string; user_metadata?: Record<string, unknown> } | undefined;
+  if (!c?.sub) return null;
+  const user = { id: c.sub, email: c.email ?? null, user_metadata: (c.user_metadata ?? {}) as Record<string, any> };
   const { data: a } = await supabase.rpc('my_account');
   const acc = (a ?? {}) as any;
   const base = {
-    userId: user.id, email: user.email ?? null, superAdmin: !!acc.super_admin,
-    mustChangePassword: !!acc.must_change_password || user.user_metadata?.must_change_password === true,
+    userId: user.id, email: user.email, superAdmin: !!acc.super_admin,
+    mustChangePassword: !!acc.must_change_password, // from auth.users (fresh), not the JWT (stale until refresh)
   };
   if (!acc.business_id) {
     return {
