@@ -55,8 +55,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
             <div key={r.id} className="flex items-center gap-3 py-3">
               <IconBubble tone="warn"><Receipt className="h-5 w-5" /></IconBubble>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[17px] font-medium">{localName(one(r.expense_categories as any) as any, locale)}</p>
-                <p className="truncate text-sm text-ink-muted">{fmtDate(r.expense_date, locale, false)}{(one(r.trips as any) as any)?.trip_no ? ` · ${(one(r.trips as any) as any).trip_no}` : ''}{r.note ? ` · ${r.note}` : ''}</p>
+                <p className="break-words text-[17px] font-medium">{localName(one(r.expense_categories as any) as any, locale)}</p>
+                <p className="break-words text-sm text-ink-muted">{fmtDate(r.expense_date, locale, false)}{(one(r.trips as any) as any)?.trip_no ? ` · ${(one(r.trips as any) as any).trip_no}` : ''}{r.note ? ` · ${r.note}` : ''}</p>
               </div>
               <p className={`tabular text-[17px] font-medium ${r.status === 'VOID' ? 'text-ink-faint line-through' : ''}`}>{inr(r.amount)}</p>
               {ctx.role === 'owner' && r.status === 'ACTIVE' && <VoidButton kind="expense" id={r.id} label={t('c.void')} />}

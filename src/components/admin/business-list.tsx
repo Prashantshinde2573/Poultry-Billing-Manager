@@ -60,10 +60,10 @@ export function BusinessList({ list, plans, startNew, startFilter }: { list: Biz
         {rows.map((b) => (
           <Link key={b.id} href={`/admin/businesses/${b.id}`} className="press grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-1 border-b border-line px-5 py-3.5 last:border-0 hover:bg-mint/50 md:grid-cols-[minmax(0,2fr)_minmax(0,1.2fr)_120px_130px_110px]">
             <div className="min-w-0">
-              <p className="truncate font-medium">{b.name}{b.requests > 0 && <span className="ml-2 rounded-full bg-aqua px-1.5 text-[11px] font-semibold">renewal</span>}</p>
-              <p className="truncate text-[13px] text-ink-muted">{b.city ?? '—'} · {b.customers} customers · {b.members} logins</p>
+              <p className="break-words font-medium">{b.name}{b.requests > 0 && <span className="ml-2 rounded-full bg-aqua px-1.5 text-[11px] font-semibold">renewal</span>}</p>
+              <p className="break-words text-[13px] text-ink-muted">{b.city ?? '—'} · {b.customers} customers · {b.members} logins</p>
             </div>
-            <div className="hidden min-w-0 md:block"><p className="truncate text-[14px]">{b.owner_name ?? '—'}</p><p className="truncate text-[13px] text-ink-muted">{b.owner_login ?? ''}</p></div>
+            <div className="hidden min-w-0 md:block"><p className="break-words text-[14px]">{b.owner_name ?? '—'}</p><p className="break-words text-[13px] text-ink-muted">{b.owner_login ?? ''}</p></div>
             <p className="hidden text-[14px] md:block">{b.plan_name}</p>
             <p className="hidden text-[14px] md:block">{dmy(b.renews_at)}</p>
             <div className="text-right"><StateBadge state={b.state} planId={b.plan_id} renewsAt={b.renews_at} /></div>

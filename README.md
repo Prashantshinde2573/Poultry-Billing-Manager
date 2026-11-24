@@ -65,6 +65,20 @@ Active → (ends) → **Grace** (if you give one; app still works) → **Ended**
    `SUPABASE_SERVICE_ROLE_KEY`, `SUPER_ADMIN_EMAILS`, `LOGIN_EMAIL_DOMAIN=phone.poulgo.local`.
 4. Supabase → Authentication → URL Configuration: add the Vercel URL as Site URL.
 
+### Online payments (Razorpay)
+Owners can renew from **Plan & billing → Pay online**. To switch it on, add in Vercel:
+`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, then redeploy.
+In Razorpay → Webhooks add `https://<your-domain>/api/razorpay/webhook` with events
+`payment.captured`, `order.paid`, `payment.failed` and the same webhook secret.
+The price is always read from the database; the payment is applied only after the
+signature is checked on the server, and applying twice is harmless. Without keys,
+the page shows the UPI QR + reference flow instead.
+
+### Notifications, activity and error log
+- Bell (top right): collections waiting for verification, deliveries, plan renewals, plan ending.
+- **Activity** (owner): who added, changed or cancelled what, filter by person.
+- **/admin/errors** (super admin): server crashes, screen crashes and failed saves from every business.
+
 ## 4. Database
 
 `supabase/migrations/*.sql` — already applied to the PoulGo project. To recreate elsewhere:

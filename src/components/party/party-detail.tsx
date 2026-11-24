@@ -10,6 +10,14 @@ import { localName } from '@/lib/i18n';
 import { Avatar, Badge, IconCircle, PageHeader, Pills, Row, IconBubble, btnClass } from '@/components/ui/core';
 import { DailyShareButton, OwnerPartyTools, StatementExport } from './party-tools';
 
+/** "Payment received (CASH UTR1)" → "Cash · UTR1" (the row title already says what it is). */
+function cleanDesc(d: string, t: (k: any) => string) {
+  const m = /^Payment (?:received|made) \(([A-Z_]+)(?: (.*))?\)$/.exec(d);
+  if (!m) return d;
+  const k = `pay.m.${m[1]}`; const lbl = t(k);
+  return [lbl === k ? m[1] : lbl, m[2]].filter(Boolean).join(' · ');
+}
+
 type Ledger = 'RECEIVABLE' | 'PAYABLE';
 
 export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string; kind: 'CUSTOMER' | 'SUPPLIER'; sp: Record<string, string | undefined> }) {
@@ -125,7 +133,7 @@ export async function PartyDetail({ ctx, id, kind, sp }: { ctx: Ctx; id: string;
               return (
                 <Row key={r.id}
                   left={<IconBubble tone={r.is_reversal ? 'warn' : isCredit ? 'good' : 'aqua'}>{isCredit ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}</IconBubble>}
-                  title={t(`l.${r.type}` as any)} sub={`${fmtDate(r.date, locale)}${r.description ? ' · ' + r.description : ''}`}
+                  title={t(`l.${r.type}` as any)} sub={`${fmtDate(r.date, locale)}${r.description ? ' · ' + cleanDesc(r.description, t) : ''}`}
                   amount={`${isCredit ? '−' : '+'}${inrSmart(amt)}`} amountSub={`${t('l.balance')} ${inrSmart(r.balance)}`} tone={isCredit ? 'good' : undefined} />
               );
             })}

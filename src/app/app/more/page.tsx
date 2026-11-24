@@ -19,7 +19,7 @@ export default async function Page() {
       <PageHeader title={t('nav.more')} />
       <section className="card flex items-center gap-3 p-4">
         <Avatar name={ctx.name || ctx.businessName} size={52} />
-        <div className="min-w-0 flex-1"><p className="truncate font-semibold">{ctx.name}</p><p className="truncate text-sm text-ink-muted">{ctx.businessName} · {t(`set.role.${ctx.role}`)}</p></div>
+        <div className="min-w-0 flex-1"><p className="break-words font-semibold">{ctx.name}</p><p className="break-words text-sm text-ink-muted">{ctx.businessName} · {t(`set.role.${ctx.role}`)}</p></div>
       </section>
       <nav className="grid grid-cols-3 gap-3">
         {items.map((n) => {

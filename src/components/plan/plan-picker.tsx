@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Check, MessageCircle, Smartphone } from 'lucide-react';
+import { Check, ChevronDown, MessageCircle, ShieldCheck, Smartphone } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useI18n } from '@/lib/i18n/client';
 import { localName } from '@/lib/i18n';
@@ -11,6 +11,20 @@ import { Segmented, TextInput } from '@/components/ui/fields';
 import { useToast } from '@/components/ui/toast';
 import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
 import { requestPlan } from '@/app/actions/plan';
+import { confirmPlanPayment, startPlanPayment } from '@/app/actions/razorpay';
+import { fmtDate } from '@/lib/format';
+
+declare global { interface Window { Razorpay?: any } }
+
+function loadCheckout(): Promise<boolean> {
+  if (window.Razorpay) return Promise.resolve(true);
+  return new Promise((res) => {
+    const s = document.createElement('script');
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    s.onload = () => res(true); s.onerror = () => res(false);
+    document.body.appendChild(s);
+  });
+}
 
 type Plan = {
   id: string; name: string; name_mr: string | null; name_hi: string | null; blurb: string | null; blurb_mr: string | null; blurb_hi: string | null;
@@ -20,9 +34,9 @@ type Months = 1 | 6 | 12;
 const price = (p: Plan, m: Months) => (m === 1 ? p.monthly : m === 6 ? p.half_yearly : p.yearly);
 
 /** Choose plan + period, pay by UPI QR, then send the UTR (and optionally WhatsApp) to PoulGo. */
-export function PlanPicker({ plans, current, initial, business, platform, canRequest }: {
+export function PlanPicker({ plans, current, initial, business, platform, canRequest, online = false }: {
   plans: Plan[]; current: string; initial?: string; business: string;
-  platform: { whatsapp: string | null; upi_id: string | null; payee_name: string | null; brand_name: string }; canRequest: boolean;
+  platform: { whatsapp: string | null; upi_id: string | null; payee_name: string | null; brand_name: string }; canRequest: boolean; online?: boolean;
 }) {
   const { t, locale } = useI18n();
   const toast = useToast();
@@ -33,6 +47,33 @@ export function PlanPicker({ plans, current, initial, business, platform, canReq
   const [qr, setQr] = useState('');
   const [sent, setSent] = useState(false);
   const { pending, err, run } = useSubmit();
+  const [paying, setPaying] = useState(false);
+  const [payErr, setPayErr] = useState('');
+  const [manual, setManual] = useState(!online);
+
+  const payOnline = async () => {
+    setPayErr(''); setPaying(true);
+    try {
+      const [ok, r] = await Promise.all([loadCheckout(), startPlanPayment(plan.id, months)]);
+      if (!r.ok) { setPayErr(t(('err.' + r.code) as any) + (r.detail && r.code === 'VALIDATION' ? ` (${r.detail})` : '')); setPaying(false); return; }
+      if (!ok || !window.Razorpay) { setPayErr(t('err.NETWORK')); setPaying(false); return; }
+      const o = r.data;
+      const rz = new window.Razorpay({
+        key: o.keyId, order_id: o.orderId, amount: o.amount, currency: 'INR', name: platform.brand_name,
+        description: `${o.planName} · ${months} ${t('plan.months')}`, prefill: { name: o.name, email: o.email ?? undefined },
+        notes: { business: o.businessName }, theme: { color: '#0E2A2F' },
+        modal: { ondismiss: () => { setPaying(false); toast(t('plan.payCancelled')); } },
+        handler: async (resp: any) => {
+          const c = await confirmPlanPayment(resp);
+          setPaying(false);
+          if (c.ok) { toast(t('plan.paidOk', { date: fmtDate(c.data.renews_at, locale) })); router.refresh(); }
+          else setPayErr(t(('err.' + c.code) as any));
+        },
+      });
+      rz.on('payment.failed', (e: any) => setPayErr(e?.error?.description ?? t('plan.payCancelled')));
+      rz.open();
+    } catch { setPayErr(t('err.NETWORK')); setPaying(false); }
+  };
   const plan = plans.find((p) => p.id === planId)!;
   const amount = plan ? price(plan, months) : null;
   const blurb = (p: Plan) => (locale === 'mr' ? p.blurb_mr : locale === 'hi' ? p.blurb_hi : p.blurb) ?? p.blurb ?? '';
@@ -73,7 +114,25 @@ export function PlanPicker({ plans, current, initial, business, platform, canReq
         })}
       </div>
 
-      {canRequest && amount != null && (
+      {canRequest && amount != null && online && (
+        <section className="card flex flex-col gap-4 p-5 sm:flex-row sm:items-center md:p-6">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-[18px] font-semibold">{t('plan.payOnline')}</h2>
+            <p className="mt-1 text-[14px] text-ink-muted">{t('plan.payOnlineSub')}</p>
+            <p className="mt-2 inline-flex items-center gap-1.5 text-[12.5px] text-ink-muted"><ShieldCheck className="h-4 w-4 text-good" /> {t('plan.secure')}</p>
+            {payErr && <p role="alert" className="mt-3 rounded-[12px] bg-[#FCEAE6] px-3 py-2 text-[14px] text-bad">{payErr}</p>}
+          </div>
+          <Button size="lg" disabled={paying} onClick={payOnline} className="w-full sm:w-auto">{t('plan.payNow', { amount: inr(amount, { decimals: false }) })}</Button>
+        </section>
+      )}
+
+      {canRequest && amount != null && online && (
+        <button type="button" onClick={() => setManual((m) => !m)} aria-expanded={manual} className="press flex w-full items-center justify-between gap-3 rounded-[14px] px-1 text-left text-[15px] font-medium text-ink-soft">
+          {t('plan.orManual')} <ChevronDown className={`h-5 w-5 shrink-0 transition-transform ${manual ? 'rotate-180' : ''}`} />
+        </button>
+      )}
+
+      {canRequest && amount != null && manual && (
         <section className="card grid gap-6 p-5 md:grid-cols-[220px_1fr] md:p-6">
           <div className="flex flex-col items-center gap-3">
             {qr ? <div className="w-[200px] rounded-[16px] border border-line p-2" dangerouslySetInnerHTML={{ __html: qr }} aria-label="UPI QR" />

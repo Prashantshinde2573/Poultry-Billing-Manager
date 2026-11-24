@@ -19,9 +19,9 @@ export const rs = (n: number | string | null | undefined) => (n == null ? '—' 
 export function Kpi({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: 'warn' | 'bad' | 'good' }) {
   return (
     <div className="card min-w-0 p-4">
-      <p className="truncate text-[13px] text-ink-muted">{label}</p>
+      <p className="text-[13px] leading-snug text-ink-muted">{label}</p>
       <p className={`tabular mt-1 text-[24px] font-semibold tracking-[-0.02em] ${tone === 'warn' ? 'text-[#9A5E0B]' : tone === 'bad' ? 'text-bad' : tone === 'good' ? 'text-good' : ''}`}>{value}</p>
-      {sub && <p className="mt-0.5 truncate text-[12.5px] text-ink-muted">{sub}</p>}
+      {sub && <p className="mt-0.5 break-words text-[12.5px] text-ink-muted">{sub}</p>}
     </div>
   );
 }

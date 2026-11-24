@@ -12,7 +12,7 @@ export function PlanBanner({ ctx, t, locale }: { ctx: Ctx; t: TFn; locale: Local
   let text = '';
   if (ctx.state === 'EXPIRED') { tone = 'bad'; text = t('plan.bannerExpired'); }
   else if (ctx.state === 'GRACE') { tone = 'bad'; text = t('plan.bannerGrace', { date, grace: ctx.graceUntil ? fmtDate(ctx.graceUntil, locale, false) : '' }); }
-  else if (ctx.plan.id === 'trial') { tone = 'info'; text = t('plan.bannerTrial', { n: Math.max(ctx.daysLeft, 0) }); }
+  else if (ctx.plan.id === 'trial' && ctx.daysLeft <= 7) { tone = 'info'; text = t('plan.bannerTrial', { n: Math.max(ctx.daysLeft, 0) }); }
   else if (ctx.daysLeft <= 7) { tone = 'warn'; text = t('plan.bannerEnding', { n: Math.max(ctx.daysLeft, 0), date }); }
   if (!tone) return null;
   const Icon = tone === 'bad' ? AlertTriangle : tone === 'info' ? Sparkles : Clock;

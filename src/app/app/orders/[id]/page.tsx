@@ -30,7 +30,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
       <PageHeader back="/app/orders" title={o.order_no} sub={fmtDate(o.order_date, locale)} />
       <Link href={`/app/customers/${party.id}`} className="card press flex items-center gap-3 p-4">
         <Avatar name={party.name} size={52} />
-        <div className="min-w-0 flex-1"><p className="truncate text-lg font-semibold">{party.name}</p><p className="text-sm text-ink-muted">{party.phone ?? ''}</p></div>
+        <div className="min-w-0 flex-1"><p className="break-words text-lg font-semibold">{party.name}</p><p className="text-sm text-ink-muted">{party.phone ?? ''}</p></div>
         <Badge tone={ORDER_TONE[o.status]}>{t(`o.s.${o.status}` as any)}</Badge>
       </Link>
       <section>

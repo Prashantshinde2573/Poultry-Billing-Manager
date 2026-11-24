@@ -77,8 +77,8 @@ export function BusinessDetail({ d, plans, activity, renewRequest }: { d: any; p
           <ul className="space-y-3">
             {(d.members as any[]).map((m) => (
               <li key={m.user_id} className="flex items-center gap-3">
-                <div className="min-w-0 flex-1"><p className="truncate text-[14.5px] font-medium">{m.name} <span className="font-normal text-ink-muted">· {m.role}</span>{!m.active && <Badge tone="bad">off</Badge>}</p>
-                  <p className="truncate text-[12.5px] text-ink-muted">{loginShown(m.login)} · last seen {m.last_sign_in_at ? dmy(m.last_sign_in_at) : 'never'}</p></div>
+                <div className="min-w-0 flex-1"><p className="break-words text-[14.5px] font-medium">{m.name} <span className="font-normal text-ink-muted">· {m.role}</span>{!m.active && <Badge tone="bad">off</Badge>}</p>
+                  <p className="break-words text-[12.5px] text-ink-muted">{loginShown(m.login)} · last seen {m.last_sign_in_at ? dmy(m.last_sign_in_at) : 'never'}</p></div>
                 {m.role === 'owner' && <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => adminResetOwnerPassword(m.user_id), (r) => setCreds(`PoulGo login for ${b.name}\nMobile / email: ${loginShown(m.login)}\nTemporary password: ${r.password}\nYou will set your own password after signing in.`))}><KeyRound className="h-4 w-4" /> Reset</Button>}
               </li>
             ))}
@@ -95,7 +95,7 @@ export function BusinessDetail({ d, plans, activity, renewRequest }: { d: any; p
               {(d.payments as any[]).map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-3 py-2.5 text-[14px]">
                   <div className="min-w-0"><p className="font-medium">{dmy(p.paid_on)} · {plans.find((x) => x.id === p.plan_id)?.name ?? p.plan_id} · {p.months} mo</p>
-                    <p className="truncate text-[12.5px] text-ink-muted">{p.method}{p.reference ? ` · ${p.reference}` : ''} · {dmy(p.period_from)} – {dmy(p.period_to)}</p></div>
+                    <p className="break-words text-[12.5px] text-ink-muted">{p.method}{p.reference ? ` · ${p.reference}` : ''} · {dmy(p.period_from)} – {dmy(p.period_to)}</p></div>
                   <span className="tabular font-semibold">{rs(p.amount)}</span>
                 </li>
               ))}
@@ -108,7 +108,7 @@ export function BusinessDetail({ d, plans, activity, renewRequest }: { d: any; p
               {(d.requests as any[]).map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-3 py-2.5 text-[14px]">
                   <div className="min-w-0"><p className="font-medium">{plans.find((x) => x.id === r.plan_id)?.name ?? r.plan_id} · {r.months} mo · {rs(r.amount)}</p>
-                    <p className="truncate text-[12.5px] text-ink-muted">{dmy(r.created_at)} · UTR {r.reference ?? '—'}</p></div>
+                    <p className="break-words text-[12.5px] text-ink-muted">{dmy(r.created_at)} · UTR {r.reference ?? '—'}</p></div>
                   {r.status === 'NEW' ? (
                     <div className="flex gap-1.5">
                       <Button size="sm" variant="outline" disabled={pending} onClick={() => run(() => adminSetRequest(r.id, 'REJECTED'), done('Request rejected'))}>Reject</Button>

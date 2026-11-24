@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { Logo } from '@/components/brand';
+import { Wordmark } from '@/components/brand';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
 /** Sign-in style screens: form on the right; on large screens a dark khata panel on the left. */
@@ -9,7 +9,7 @@ export function AuthShell({ children, aside, back }: { children: ReactNode; asid
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
       <aside className="stripe-card relative hidden flex-col justify-between overflow-hidden p-12 text-white lg:flex">
-        <Link href="/" className="flex items-center gap-3"><Logo size={44} /><span className="text-[22px] font-semibold tracking-[-0.01em]">PoulGo</span></Link>
+        <Link href="/" aria-label="PoulGo"><Wordmark height={52} white /></Link>
         <div className="max-w-md">{aside}</div>
         <p className="text-[13px] text-white/50">© PoulGo</p>
       </aside>
@@ -18,7 +18,7 @@ export function AuthShell({ children, aside, back }: { children: ReactNode; asid
           {back ? <Link href={back.href} className="press inline-flex items-center gap-1.5 text-[14px] font-medium text-ink-soft lg:hidden"><ArrowLeft className="h-4 w-4" /> {back.label}</Link> : <span />}
           <LanguageSwitcher />
         </div>
-        <Link href="/" className="mt-10 flex items-center gap-3 lg:hidden"><Logo size={44} /><span className="text-[22px] font-semibold tracking-[-0.01em]">PoulGo</span></Link>
+        <Link href="/" aria-label="PoulGo" className="mt-8 block lg:hidden"><Wordmark height={48} /></Link>
         <div className="mt-8 lg:mt-0">{children}</div>
       </main>
     </div>

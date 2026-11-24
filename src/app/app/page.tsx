@@ -1,20 +1,15 @@
 import Link from 'next/link';
-import { Bell, ArrowDownLeft, ArrowUpRight, Plus, ArrowLeftRight, Truck, ChevronRight, AlertTriangle, ReceiptText } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Plus, ArrowLeftRight, Truck, ChevronRight, AlertTriangle, ReceiptText } from 'lucide-react';
 import { requireCtx } from '@/lib/session';
 import { getT } from '@/lib/i18n/server';
 import { localName } from '@/lib/i18n';
 import { inrSmart, fmtDate, num, inr } from '@/lib/format';
 import { rpc, listParties, recentLedger } from '@/lib/data/queries';
-import { ActionSquare, Avatar, IconCircle, IconBubble, Row, SectionTitle, Badge } from '@/components/ui/core';
+import { ActionSquare, Avatar, IconBubble, Row, SectionTitle, Badge } from '@/components/ui/core';
 import { ICONS } from '@/components/shell/icons';
 import { NEW_ENTRY, allowed } from '@/components/shell/nav-items';
 
 export const dynamic = 'force-dynamic';
-
-function greetingKey() {
-  const h = Number(new Intl.DateTimeFormat('en-IN', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Kolkata' }).format(new Date()));
-  return h < 12 ? 'c.goodMorning' : h < 17 ? 'c.goodAfternoon' : 'c.goodEvening';
-}
 
 export default async function Dashboard() {
   const ctx = await requireCtx({ office: true });
@@ -27,22 +22,10 @@ export default async function Dashboard() {
     .slice(0, 10);
   const quick = allowed(NEW_ENTRY, ctx.role, ctx.perms, ctx.plan.modules).slice(0, 8);
   const trips = ctx.has('trips');
-  const card = 'press relative flex h-[184px] w-[84%] max-w-[340px] shrink-0 snap-start flex-col justify-between rounded-[24px] p-5 text-white shadow-lift sm:w-[340px]';
+  const card = 'press relative flex h-[184px] w-[82%] max-w-[340px] shrink-0 snap-start flex-col justify-between rounded-[24px] p-5 text-white shadow-lift sm:w-[340px]';
 
   return (
     <div className="space-y-7">
-      {/* header (reference: avatar · greeting · bell) */}
-      <header className="flex items-center gap-3">
-        <Avatar name={ctx.name || ctx.businessName} size={48} />
-        <div className="min-w-0 flex-1 leading-tight">
-          <p className="text-[14px] text-ink-muted">{t(greetingKey() as any)}</p>
-          <p className="truncate text-[19px] font-semibold tracking-[-0.01em]">{ctx.name || ctx.businessName}</p>
-        </div>
-        <span className="relative">
-          <IconCircle href="/app/payments?tab=pending" label={t('dash.pendingVerification')}><Bell className="h-5 w-5" /></IconCircle>
-          {pending.count > 0 && <span className="absolute right-2.5 top-2.5 h-2.5 w-2.5 rounded-full bg-aqua ring-2 ring-white" />}
-        </span>
-      </header>
 
       <div className="space-y-7 lg:grid lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start lg:gap-8 lg:space-y-0">
         <div className="min-w-0 space-y-7">
@@ -60,7 +43,7 @@ export default async function Dashboard() {
           </section>
 
           {/* swipeable cards (reference: debit cards) */}
-          <section className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          <section className="no-scrollbar -mx-4 flex snap-x snap-mandatory scroll-px-4 gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:scroll-px-0 sm:px-0">
             <Link href="/app/reports?r=sales" className={`stripe-card ${card}`}>
               <div className="flex items-start justify-between"><p className="tabular text-[28px] font-semibold tracking-[-0.02em]">{inrSmart(d.sales_today)}</p><ArrowDownLeft className="h-5 w-5 text-aqua-light" /></div>
               <div><p className="text-[13.5px] text-white/65">{t('dash.salesToday')} · {d.bills_today} {t('l.BILL')}</p><p className="mt-0.5 text-[15px]">{t('dash.receivedToday')} {inrSmart(d.received_today)}</p></div>
@@ -109,7 +92,7 @@ export default async function Dashboard() {
           {people.length > 0 && (
             <section>
               <SectionTitle action={<Link href="/app/customers">{t('c.viewAll')}</Link>}>{t('dash.recentCustomers')}</SectionTitle>
-              <div className="no-scrollbar -mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+              <div className="no-scrollbar -mx-4 flex scroll-px-4 gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
                 {people.map((c) => (
                   <Link key={c.id} href={`/app/customers/${c.id}`} className="press flex w-[76px] shrink-0 flex-col items-center gap-1.5 text-center">
                     <Avatar name={c.name} size={56} />
@@ -170,8 +153,8 @@ export default async function Dashboard() {
                     <Link key={tr.id} href={`/app/trips/${tr.id}`} className="card press flex items-center gap-3 p-4">
                       <IconBubble tone="ink"><Truck className="h-5 w-5" /></IconBubble>
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-2"><p className="truncate font-medium">{tr.trip_no} · {tr.driver ?? '—'}</p><span className="tabular shrink-0 text-[13px] text-ink-muted">{tr.delivered}/{tr.customers}</span></div>
-                        <p className="truncate text-[13px] text-ink-muted">{tr.vehicle ?? ''} · {t(`t.s.${tr.status}` as any)}</p>
+                        <div className="flex items-center justify-between gap-2"><p className="break-words font-medium">{tr.trip_no} · {tr.driver ?? '—'}</p><span className="tabular shrink-0 text-[13px] text-ink-muted">{tr.delivered}/{tr.customers}</span></div>
+                        <p className="break-words text-[13px] text-ink-muted">{tr.vehicle ?? ''} · {t(`t.s.${tr.status}` as any)}</p>
                         <div className="mt-2 h-1.5 rounded-full bg-ink/[0.07]"><div className="h-1.5 rounded-full bg-aqua" style={{ width: `${tr.customers ? (tr.delivered / tr.customers) * 100 : 0}%` }} /></div>
                       </div>
                     </Link>

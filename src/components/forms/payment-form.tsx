@@ -65,7 +65,7 @@ export function PaymentForm({ customers, suppliers, initialDir, initialParty, to
         </header>
         <div className="card flex items-center gap-3 p-4">
           {sel && <Avatar name={sel.name} size={48} />}
-          <div className="min-w-0 flex-1"><p className="truncate font-semibold">{sel?.name}</p><p className="text-sm text-ink-muted">{t('pay.outstanding')}: {inr(sel?.balance)}</p></div>
+          <div className="min-w-0 flex-1"><p className="break-words font-semibold">{sel?.name}</p><p className="text-sm text-ink-muted">{t('pay.outstanding')}: {inr(sel?.balance)}</p></div>
           <p className="tabular text-2xl font-semibold">{inr(amount)}</p>
         </div>
         <div><p className="label">{t('c.method')}</p>

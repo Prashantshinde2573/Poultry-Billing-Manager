@@ -6,6 +6,7 @@ import { fmtDate, inr } from '@/lib/format';
 import { platform, publicPlans } from '@/lib/data/platform';
 import { Badge, PageHeader, SectionTitle } from '@/components/ui/core';
 import { PlanPicker } from '@/components/plan/plan-picker';
+import { razorpayEnabled } from '@/lib/razorpay';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +58,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
 
       <section>
         <SectionTitle>{ctx.plan.id === 'trial' ? t('plan.choose') : t('plan.renew')}</SectionTitle>
-        <PlanPicker plans={plans as any} current={ctx.plan.id} initial={sp.plan} business={ctx.businessName} platform={pf} canRequest={owner} />
+        <PlanPicker plans={plans as any} current={ctx.plan.id} initial={sp.plan} business={ctx.businessName} platform={pf} canRequest={owner} online={razorpayEnabled()} />
         {!owner && <p className="mt-3 text-[14px] text-ink-muted">{t('plan.askOwner')}</p>}
       </section>
 
@@ -68,7 +69,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
             {hist.payments.map((p: any, i: number) => (
               <div key={i} className="flex items-center justify-between gap-3 py-3.5 text-[14.5px]">
                 <div className="min-w-0"><p className="font-medium">{fmtDate(p.paid_on, locale, false)} · {p.months} {t('plan.months')}</p>
-                  <p className="truncate text-[13px] text-ink-muted">{fmtDate(p.period_from, locale, false)} – {fmtDate(p.period_to, locale, false)}{p.reference ? ` · ${p.reference}` : ''}</p></div>
+                  <p className="break-words text-[13px] text-ink-muted">{fmtDate(p.period_from, locale, false)} – {fmtDate(p.period_to, locale, false)}{p.reference ? ` · ${p.reference}` : ''}</p></div>
                 <p className="tabular font-semibold">{inr(p.amount, { decimals: false })}</p>
               </div>
             ))}

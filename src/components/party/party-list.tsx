@@ -41,7 +41,7 @@ export function PartyList({ rows, kind }: { rows: PartyRow[]; kind: 'CUSTOMER' |
                 <Link href={`${base}/${r.id}`} className="press flex items-center gap-3.5 py-3">
                   <Avatar name={r.name} size={56} />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[17px] font-medium">{r.name}{r.status === 'INACTIVE' && <span className="ml-1.5 text-xs text-ink-muted">({t('p.archived')})</span>}</p>
+                    <p className="break-words text-[17px] font-medium">{r.name}{r.status === 'INACTIVE' && <span className="ml-1.5 text-xs text-ink-muted">({t('p.archived')})</span>}</p>
                     <p className="mt-1 truncate text-sm text-ink-muted">{r.last_activity ? t('p.lastActivity', { date: fmtDate(r.last_activity, locale) }) : r.phone ?? ''}</p>
                   </div>
                   <div className="text-right">

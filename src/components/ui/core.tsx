@@ -46,8 +46,8 @@ export function PageHeader({ title, back, right, sub }: { title: ReactNode; back
     <header className="no-print flex items-start gap-3 pt-1">
       {back && <IconCircle href={back} label="Back" className="mt-0.5"><ArrowLeft className="h-5 w-5" /></IconCircle>}
       <div className="min-w-0 flex-1">
-        <h1 className="truncate text-[26px] font-semibold leading-tight tracking-[-0.02em] lg:text-[30px]">{title}</h1>
-        {sub && <p className="mt-0.5 truncate text-[14px] text-ink-muted">{sub}</p>}
+        <h1 className="break-words text-[26px] font-semibold leading-tight tracking-[-0.02em] lg:text-[30px]">{title}</h1>
+        {sub && <p className="mt-0.5 text-[14px] leading-snug text-ink-muted">{sub}</p>}
       </div>
       {right && <div className="flex shrink-0 items-center gap-2">{right}</div>}
     </header>
@@ -114,9 +114,9 @@ export function Empty({ title, sub, action, icon }: { title: string; sub?: strin
 export function Stat({ label, value, sub, tone }: { label: string; value: ReactNode; sub?: ReactNode; tone?: 'good' | 'bad' }) {
   return (
     <div className="card min-w-0 p-4">
-      <p className="truncate text-[13px] text-ink-muted">{label}</p>
+      <p className="break-words text-[13px] text-ink-muted">{label}</p>
       <p className={`tabular mt-1 truncate text-[20px] font-semibold tracking-[-0.01em] ${tone === 'good' ? 'text-good' : tone === 'bad' ? 'text-bad' : ''}`}>{value}</p>
-      {sub && <p className="mt-0.5 truncate text-[12.5px] text-ink-muted">{sub}</p>}
+      {sub && <p className="mt-0.5 break-words text-[12.5px] text-ink-muted">{sub}</p>}
     </div>
   );
 }
@@ -129,8 +129,8 @@ export function Row({ href, left, title, sub, amount, amountSub, tone }: {
     <>
       {left}
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[16px] font-medium leading-snug">{title}</p>
-        {sub && <p className="mt-0.5 truncate text-[13.5px] text-ink-muted">{sub}</p>}
+        <p className="line-clamp-2 break-words text-[16px] font-medium leading-snug">{title}</p>
+        {sub && <p className="mt-0.5 break-words text-[13.5px] leading-snug text-ink-muted">{sub}</p>}
       </div>
       {(amount !== undefined || amountSub) && (
         <div className="shrink-0 text-right">

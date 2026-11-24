@@ -2,20 +2,53 @@
   "name": "PoulGo — Poultry Business Manager",
   "short_name": "PoulGo",
   "description": "Orders, trips, deliveries, customer & supplier accounts, profit & loss",
-  "id": "/",
-  "start_url": "/",
+  "id": "/app",
+  "start_url": "/app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F1FAF7",
-  "theme_color": "#E3F5F1",
+  "background_color": "#F2F6F5",
+  "theme_color": "#F2F6F5",
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Receive payment", "url": "/payments/new", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "New order", "url": "/orders/new", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Receive payment",
+      "url": "/app/payments/new",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "New order",
+      "url": "/app/orders/new",
+      "icons": [
+        {
+          "src": "/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

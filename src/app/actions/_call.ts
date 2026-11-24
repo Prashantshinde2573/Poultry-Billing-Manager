@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
 import { fromDbError, type ActionResult } from '@/lib/errors';
 import { getCtx, type Ctx } from '@/lib/session';
+import { logError } from '@/lib/report-error';
 
 /** Runs an RPC as the signed-in user. business_id always comes from the session, never the client. */
 export async function call<T = any>(fn: string, args: Record<string, unknown>, opts: { business?: boolean } = { business: true }): Promise<ActionResult<T>> {
@@ -15,11 +16,17 @@ export async function call<T = any>(fn: string, args: Record<string, unknown>, o
   const supabase = await createClient();
   try {
     const { data, error } = await supabase.rpc(fn, ctx ? { p_business_id: ctx.businessId, ...args } : args);
-    if (error) return fromDbError(error);
+    if (error) {
+      const r = fromDbError(error);
+      if (!r.ok && r.code === 'UNKNOWN') await logError({ source: 'action', message: error.message, code: error.code, path: fn, meta: { details: error.details, hint: error.hint } });
+      return r;
+    }
     revalidatePath('/', 'layout');
     return { ok: true, data: data as T };
   } catch (e) {
-    return fromDbError({ message: (e as Error).message });
+    const r = fromDbError({ message: (e as Error).message });
+    if (!r.ok && r.code === 'UNKNOWN') await logError({ source: 'action', message: (e as Error).message, path: fn, stack: (e as Error).stack });
+    return r;
   }
 }
 

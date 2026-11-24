@@ -49,9 +49,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
               <div key={r.id} className="flex items-center gap-3 py-3">
                 <IconBubble tone={inDir ? 'good' : 'violet'}>{inDir ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}</IconBubble>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[17px] font-medium">{name}</p>
-                  <p className="truncate text-sm text-ink-muted">{fmtDate(r.payment_date, locale, false)} · {t(`pay.m.${r.method}` as any)}{r.reference ? ` · ${r.reference}` : ''}{trip ? ` · ${trip}` : ''}</p>
-                  {r.status_reason && <p className="truncate text-xs text-ink-muted">{r.status_reason}</p>}
+                  <p className="break-words text-[17px] font-medium">{name}</p>
+                  <p className="break-words text-sm text-ink-muted">{fmtDate(r.payment_date, locale, false)} · {t(`pay.m.${r.method}` as any)}{r.reference ? ` · ${r.reference}` : ''}{trip ? ` · ${trip}` : ''}</p>
+                  {r.status_reason && <p className="break-words text-xs text-ink-muted">{r.status_reason}</p>}
                 </div>
                 <div className="shrink-0 text-right">
                   <p className={`tabular text-[17px] font-medium ${r.status === 'VOID' || r.status === 'REJECTED' ? 'text-ink-faint line-through' : inDir ? 'text-good' : ''}`}>{inDir ? '+' : '−'}{inr(r.amount)}</p>

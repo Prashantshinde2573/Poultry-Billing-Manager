@@ -189,8 +189,8 @@ export function CustomerCard({ tripId, c, canDeliver, canCollect, canOverride, s
       <div className="flex items-center gap-3">
         <Avatar name={c.name} size={48} />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[17px] font-semibold">{c.name}</p>
-          <p className="truncate text-sm text-ink-muted">{c.lines.map((l) => `${l.size} ${l.allocated_qty}`).join(' · ')}</p>
+          <p className="break-words text-[17px] font-semibold">{c.name}</p>
+          <p className="break-words text-sm text-ink-muted">{c.lines.map((l) => `${l.size} ${l.allocated_qty}`).join(' · ')}</p>
         </div>
         <Badge tone={DELIVERY_TONE[st]}>{t(`d.s.${st}` as any)}</Badge>
       </div>

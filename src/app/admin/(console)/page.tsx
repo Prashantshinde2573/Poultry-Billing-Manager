@@ -40,7 +40,7 @@ export default async function Overview() {
             <div className="card divide-y divide-line px-4">
               {attention.map((b) => (
                 <Link key={b.id} href={`/admin/businesses/${b.id}`} className="press flex items-center gap-3 py-3">
-                  <div className="min-w-0 flex-1"><p className="truncate font-medium">{b.name}</p><p className="truncate text-[13px] text-ink-muted">{b.plan_name} · till {dmy(b.renews_at)}{b.city ? ` · ${b.city}` : ''}</p></div>
+                  <div className="min-w-0 flex-1"><p className="break-words font-medium">{b.name}</p><p className="break-words text-[13px] text-ink-muted">{b.plan_name} · till {dmy(b.renews_at)}{b.city ? ` · ${b.city}` : ''}</p></div>
                   <StateBadge state={b.state} planId={b.plan_id} renewsAt={b.renews_at} />
                 </Link>
               ))}
@@ -72,7 +72,7 @@ export default async function Overview() {
             <div className="card divide-y divide-line px-4">
               {newReqs.slice(0, 5).map((r) => (
                 <Link key={r.id} href={`/admin/businesses/${r.business_id}?renew=${r.id}`} className="press flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0"><p className="truncate font-medium">{r.business_name}</p><p className="truncate text-[13px] text-ink-muted">{r.plan_name} · {r.months} mo · UTR {r.reference ?? '—'}</p></div>
+                  <div className="min-w-0"><p className="break-words font-medium">{r.business_name}</p><p className="break-words text-[13px] text-ink-muted">{r.plan_name} · {r.months} mo · UTR {r.reference ?? '—'}</p></div>
                   <span className="tabular font-semibold">{rs(r.amount)}</span>
                 </Link>
               ))}
@@ -85,7 +85,7 @@ export default async function Overview() {
             <div className="card divide-y divide-line px-4">
               {newLeads.map((l) => (
                 <div key={l.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0"><p className="truncate font-medium">{l.name}{l.business_name ? ` · ${l.business_name}` : ''}</p><p className="truncate text-[13px] text-ink-muted">{l.city ?? '—'} · {dmy(l.created_at)}</p></div>
+                  <div className="min-w-0"><p className="break-words font-medium">{l.name}{l.business_name ? ` · ${l.business_name}` : ''}</p><p className="break-words text-[13px] text-ink-muted">{l.city ?? '—'} · {dmy(l.created_at)}</p></div>
                   <a href={`tel:${l.phone}`} className="tabular shrink-0 text-[14px] font-medium text-aqua-deep">{l.phone}</a>
                 </div>
               ))}

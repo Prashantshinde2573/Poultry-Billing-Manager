@@ -5,6 +5,7 @@ import { getT } from '@/lib/i18n/server';
 import { I18nProvider } from '@/lib/i18n/client';
 import { ToastProvider } from '@/components/ui/toast';
 import { SwRegister } from '@/components/sw-register';
+import { ErrorReporter } from '@/components/error-reporter';
 
 export const metadata: Metadata = {
   title: { default: 'PoulGo', template: '%s · PoulGo' },
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#E3F5F1',
+  width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#F2F6F5',
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
           <ToastProvider>{children}</ToastProvider>
         </I18nProvider>
         <SwRegister />
+        <ErrorReporter />
       </body>
     </html>
   );

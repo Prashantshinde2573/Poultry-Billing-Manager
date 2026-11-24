@@ -19,7 +19,7 @@ export default async function Page() {
     <div className="space-y-6">
       <header className="flex items-center gap-3.5 pt-2">
         <Avatar name={ctx.name || '?'} size={56} />
-        <div className="min-w-0 flex-1 leading-tight"><p className="text-[17px] text-ink-muted">{t('c.welcome')}</p><p className="truncate text-[22px] font-semibold">{ctx.name}</p></div>
+        <div className="min-w-0 flex-1 leading-tight"><p className="text-[17px] text-ink-muted">{t('c.welcome')}</p><p className="break-words text-[22px] font-semibold">{ctx.name}</p></div>
       </header>
       <SectionTitle>{t('nav.myTrips')}</SectionTitle>
       {open.length === 0 ? <Empty icon={<Truck className="h-6 w-6" />} title={t('dash.noTrips')} /> : open.map((x) => (

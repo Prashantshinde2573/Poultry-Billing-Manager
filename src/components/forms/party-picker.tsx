@@ -41,7 +41,7 @@ export function PartyPicker({ parties, value, onChange, label, showBalance = tru
               <button type="button" onClick={() => { onChange(p.id); setOpen(false); setQ(''); }} className="press flex w-full items-center gap-3 py-2.5 text-left">
                 <Avatar name={p.name} size={40} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate font-medium">{p.name}</span>
+                  <span className="block break-words font-medium">{p.name}</span>
                   <span className="block text-sm text-ink-muted">{p.phone ?? ''}</span>
                 </span>
                 {showBalance && <span className="tabular text-sm font-medium">{inr(p.balance)}</span>}

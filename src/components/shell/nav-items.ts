@@ -14,6 +14,7 @@ export const NAV: NavItem[] = [
   { href: '/app/expenses', key: 'nav.expenses', icon: 'receipt', perm: 'expenses', module: 'expenses' },
   { href: '/app/pnl', key: 'nav.pnl', icon: 'chart', owner: true, module: 'pnl' },
   { href: '/app/reports', key: 'nav.reports', icon: 'file', module: 'reports' },
+  { href: '/app/activity', key: 'nav.activity', icon: 'history', owner: true },
   { href: '/app/plan', key: 'plan.title', icon: 'crown', owner: true },
   { href: '/app/settings', key: 'nav.settings', icon: 'settings' },
 ];

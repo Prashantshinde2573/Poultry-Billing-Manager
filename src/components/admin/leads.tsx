@@ -33,8 +33,8 @@ export function Leads({ rows }: { rows: any[] }) {
           {list.map((l) => (
             <div key={l.id} className="flex flex-wrap items-center gap-3 px-5 py-4">
               <button type="button" onClick={() => setEd({ ...l, notes: l.notes ?? '' })} className="min-w-0 flex-1 text-left">
-                <p className="truncate font-medium">{l.name}{l.business_name ? <span className="font-normal text-ink-muted"> · {l.business_name}</span> : null}</p>
-                <p className="truncate text-[13px] text-ink-muted">{[l.city, l.plan_id, dmy(l.created_at)].filter(Boolean).join(' · ')}</p>
+                <p className="break-words font-medium">{l.name}{l.business_name ? <span className="font-normal text-ink-muted"> · {l.business_name}</span> : null}</p>
+                <p className="break-words text-[13px] text-ink-muted">{[l.city, l.plan_id, dmy(l.created_at)].filter(Boolean).join(' · ')}</p>
                 {l.message && <p className="mt-1 line-clamp-2 text-[13.5px] text-ink-soft">{l.message}</p>}
                 {l.notes && <p className="mt-1 line-clamp-1 text-[13px] italic text-ink-muted">{l.notes}</p>}
               </button>
