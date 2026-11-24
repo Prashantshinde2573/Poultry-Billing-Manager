@@ -5,9 +5,9 @@ import { createClient } from './supabase/server';
 
 export type Role = 'owner' | 'staff' | 'driver';
 export type Perm = 'suppliers' | 'expenses' | 'verify_payments' | 'rate_override' | 'reports';
-export type Module = 'suppliers' | 'orders' | 'trips' | 'expenses' | 'pnl' | 'reports';
+export type Module = 'suppliers' | 'orders' | 'trips' | 'expenses' | 'pnl' | 'reports' | 'ai';
 export type PlanState = 'ACTIVE' | 'GRACE' | 'EXPIRED' | 'SUSPENDED';
-export const MODULES: Module[] = ['suppliers', 'orders', 'trips', 'expenses', 'pnl', 'reports'];
+export const MODULES: Module[] = ['suppliers', 'orders', 'trips', 'expenses', 'pnl', 'reports', 'ai'];
 
 export interface PlanInfo {
   id: string; name: string; name_mr: string | null; name_hi: string | null; modules: Module[];

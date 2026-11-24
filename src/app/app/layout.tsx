@@ -21,7 +21,7 @@ export default async function OfficeLayout({ children }: { children: ReactNode }
         roleLabel={t(`set.role.${ctx.role}`)} planLabel={planLabel} />
       <main className="mx-auto w-full min-w-0 max-w-[1120px] px-4 pb-32 sm:px-6 lg:px-10 lg:pb-16 lg:pt-6">
         <TopBar businessName={ctx.businessName} userName={ctx.name} roleLabel={t(`set.role.${ctx.role}`)} planLabel={planLabel}
-          planNote={note.text} planTone={note.tone} owner={ctx.role === 'owner'} unread={notes.unread} />
+          planNote={note.text} planTone={note.tone} owner={ctx.role === 'owner'} unread={notes.unread} ask={ctx.role === 'owner' && ctx.has('ai')} />
         <PlanBanner ctx={ctx} t={t} locale={locale} />
         <PermProvider value={{ owner: ctx.role === 'owner', modules: ctx.plan.modules, perms: ctx.perms }}>{children}</PermProvider>
       </main>

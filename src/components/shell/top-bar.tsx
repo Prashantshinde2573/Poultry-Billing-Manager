@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
-import { Bell, ChevronRight, Crown, History, LogOut, Settings } from 'lucide-react';
+import { Bell, ChevronRight, Crown, History, LogOut, Settings, Sparkles } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/client';
 import { Sheet } from '@/components/ui/sheet';
 import { Avatar } from '@/components/ui/core';
@@ -20,10 +20,11 @@ export interface TopBarProps {
   unread: number;
   home?: string;
   notificationsHref?: string;
+  ask?: boolean;
 }
 
 /** Phone: logo + business, bell, avatar menu. Desktop: just bell + avatar (the sidebar carries the rest). */
-export function TopBar({ businessName, userName, roleLabel, planLabel, planNote, planTone, owner, unread, home = '/app', notificationsHref = '/app/notifications' }: TopBarProps) {
+export function TopBar({ businessName, userName, roleLabel, planLabel, planNote, planTone, owner, unread, home = '/app', notificationsHref = '/app/notifications', ask = false }: TopBarProps) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const tone = planTone === 'good' ? 'text-good' : planTone === 'warn' ? 'text-[#9A5B05]' : 'text-bad';
@@ -47,6 +48,11 @@ export function TopBar({ businessName, userName, roleLabel, planLabel, planNote,
             </span>
           </Link>
           <div className="hidden flex-1 lg:block" />
+          {ask && (
+            <Link href="/app/ask" aria-label={t('nav.ask')} className="press flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-ink px-3.5 text-[14px] font-semibold text-white">
+              <Sparkles className="h-[18px] w-[18px]" /> <span className="hidden min-[420px]:inline">{t('nav.ask')}</span>
+            </Link>
+          )}
           <Link href={notificationsHref} aria-label={unread ? `${t('nav.notifications')} (${unread})` : t('nav.notifications')}
             className="press relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line bg-white text-ink">
             <Bell className="h-5 w-5" />

@@ -10,7 +10,7 @@ import { ErrorBox, useSubmit } from '@/components/ui/use-submit';
 import { adminUpsertPlan } from '@/app/actions/admin';
 import { rs } from './bits';
 
-const MODS = [['suppliers', 'Suppliers & purchases'], ['orders', 'Orders'], ['trips', 'Trips & driver app'], ['expenses', 'Expenses'], ['pnl', 'Profit & loss'], ['reports', 'Reports']] as const;
+const MODS = [['suppliers', 'Suppliers & purchases'], ['orders', 'Orders'], ['trips', 'Trips & driver app'], ['expenses', 'Expenses'], ['pnl', 'Profit & loss'], ['reports', 'Reports'], ['ai', 'Ask (AI chat)']] as const;
 const s = (v: unknown) => (v == null ? '' : String(v));
 
 export function PlansEditor({ plans }: { plans: any[] }) {

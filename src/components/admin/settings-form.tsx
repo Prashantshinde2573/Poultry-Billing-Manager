@@ -11,7 +11,7 @@ import { changePassword } from '@/app/actions/auth';
 export function AdminSettings({ s }: { s: any }) {
   const router = useRouter();
   const toast = useToast();
-  const [f, setF] = useState({ brand_name: s.brand_name ?? 'PoulGo', whatsapp: s.whatsapp ?? '', upi_id: s.upi_id ?? '', payee_name: s.payee_name ?? '', support_phone: s.support_phone ?? '', support_email: s.support_email ?? '', trial_days: String(s.trial_days ?? 14), grace_days: String(s.grace_days ?? 5) });
+  const [f, setF] = useState({ brand_name: s.brand_name ?? 'PoulGo', whatsapp: s.whatsapp ?? '', upi_id: s.upi_id ?? '', payee_name: s.payee_name ?? '', support_phone: s.support_phone ?? '', support_email: s.support_email ?? '', trial_days: String(s.trial_days ?? 14), grace_days: String(s.grace_days ?? 5), ai_monthly_limit: String(s.ai_monthly_limit ?? 300) });
   const [pw, setPw] = useState('');
   const a = useSubmit();
   const b = useSubmit();
@@ -30,9 +30,10 @@ export function AdminSettings({ s }: { s: any }) {
           <TextInput label="Brand name" value={f.brand_name} onChange={set('brand_name')} />
         </div>
         <h2 className="pt-2 text-[16px] font-semibold">Defaults</h2>
-        <div className="grid grid-cols-2 gap-3 sm:w-1/2">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <TextInput label="Free trial days" inputMode="numeric" value={f.trial_days} onChange={set('trial_days')} />
           <TextInput label="Grace days (suggested)" inputMode="numeric" value={f.grace_days} onChange={set('grace_days')} />
+          <TextInput label="AI questions / month" inputMode="numeric" value={f.ai_monthly_limit} onChange={set('ai_monthly_limit')} hint="Per business" />
         </div>
         <ErrorBox msg={a.err} />
         <Button disabled={a.pending} onClick={() => a.run(() => adminSaveSettings(f), () => { toast('Saved'); })}>Save settings</Button>

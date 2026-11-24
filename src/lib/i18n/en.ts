@@ -752,6 +752,20 @@ export const en = {
   'day.next': 'Next: {step}',
   'day.allDone': 'All done',
   'day.oldOrders': 'Add earlier orders',
+  'nav.ask': 'Ask',
+  'ask.title': 'Ask about your business',
+  'ask.placeholder': 'Type your question…',
+  'ask.send': 'Send',
+  'ask.thinking': 'Looking at your data…',
+  'ask.failed': 'Could not get an answer. Try again.',
+  'ask.limit': 'This month\'s questions are used up. Upgrade or wait for next month.',
+  'ask.off': 'Ask is not switched on yet.',
+  'ask.quota': '{used}/{limit} questions this month',
+  'ask.ex1': 'Who owes me the most?',
+  'ask.ex2': 'How many birds and kg did I sell this month?',
+  'ask.ex3': 'Weight loss in yesterday\'s trip?',
+  'ask.ex4': 'How much do I owe the farms?',
+  'plan.mod.ai': 'Ask (AI)',
 } as const;
 
 export type MessageKey = keyof typeof en;
