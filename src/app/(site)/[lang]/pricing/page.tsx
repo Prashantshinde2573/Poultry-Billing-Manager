@@ -1,13 +1,12 @@
-import { getT } from '@/lib/i18n/server';
+import { tFor } from '@/lib/i18n/server';
 import { platform, publicPlans } from '@/lib/data/platform';
 import { SiteFooter, SiteNav } from '@/components/site/site-chrome';
 import { SitePricing } from '@/components/site/site-pricing';
 
-export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pricing · PoulGo' };
 
-export default async function Page() {
-  const { t } = await getT();
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
+  const { t } = tFor((await params).lang);
   const [plans, pf] = await Promise.all([publicPlans(), platform()]);
   return (
     <div className="min-h-dvh">

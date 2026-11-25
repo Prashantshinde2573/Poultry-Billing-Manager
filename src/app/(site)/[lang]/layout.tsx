@@ -1,0 +1,45 @@
+import type { Metadata, Viewport } from 'next';
+import type { ReactNode } from 'react';
+import { Suspense } from 'react';
+import { notFound } from 'next/navigation';
+import '../../globals.css';
+import { isLocale } from '@/lib/i18n';
+import { I18nProvider } from '@/lib/i18n/client';
+import { ToastProvider } from '@/components/ui/toast';
+import { SwRegister } from '@/components/sw-register';
+import { ErrorReporter } from '@/components/error-reporter';
+import { NavProgress } from '@/components/nav-progress';
+
+/**
+ * Website + sign-in pages. Built ahead of time for each language and served from the CDN
+ * (the middleware maps "/" → "/mr" etc. by the language cookie), so they open instantly.
+ */
+export const dynamicParams = false;
+export const revalidate = 300;
+export function generateStaticParams() { return [{ lang: 'mr' }, { lang: 'hi' }, { lang: 'en' }]; }
+
+export const metadata: Metadata = {
+  title: { default: 'PoulGo', template: '%s · PoulGo' },
+  description: 'Poultry trading, trips, deliveries and accounts — मराठी, हिंदी, English',
+  manifest: '/manifest.webmanifest',
+  icons: { icon: '/icons/icon-192.png', apple: '/icons/apple-touch-icon.png' },
+  appleWebApp: { capable: true, title: 'PoulGo', statusBarStyle: 'default' },
+};
+export const viewport: Viewport = { width: 'device-width', initialScale: 1, viewportFit: 'cover', themeColor: '#F2F6F5' };
+
+export default async function SiteLayout({ children, params }: { children: ReactNode; params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  return (
+    <html lang={lang}>
+      <body>
+        <I18nProvider locale={lang}>
+          <ToastProvider>{children}</ToastProvider>
+          <Suspense fallback={null}><NavProgress /></Suspense>
+        </I18nProvider>
+        <SwRegister />
+        <ErrorReporter />
+      </body>
+    </html>
+  );
+}

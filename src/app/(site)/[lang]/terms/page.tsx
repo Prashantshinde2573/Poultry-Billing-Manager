@@ -1,10 +1,10 @@
-import { getT } from '@/lib/i18n/server';
+import { tFor } from '@/lib/i18n/server';
 import { SiteFooter, SiteNav } from '@/components/site/site-chrome';
 
 export const metadata = { title: 'Terms · PoulGo' };
 
-export default async function Page() {
-  const { t } = await getT();
+export default async function Page({ params }: { params: Promise<{ lang: string }> }) {
+  const { t } = tFor((await params).lang);
   return (
     <div className="min-h-dvh">
       <SiteNav t={t} />

@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
-import './globals.css';
+import '../globals.css';
 import { getT } from '@/lib/i18n/server';
 import { I18nProvider } from '@/lib/i18n/client';
 import { ToastProvider } from '@/components/ui/toast';
@@ -22,11 +22,11 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const { locale, messages } = await getT();
+  const { locale } = await getT();
   return (
     <html lang={locale}>
       <body>
-        <I18nProvider locale={locale} messages={messages}>
+        <I18nProvider locale={locale}>
           <ToastProvider>{children}</ToastProvider>
           <Suspense fallback={null}><NavProgress /></Suspense>
         </I18nProvider>

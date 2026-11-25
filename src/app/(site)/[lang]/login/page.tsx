@@ -1,16 +1,12 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { getT } from '@/lib/i18n/server';
-import { getCtx, homeFor } from '@/lib/session';
+import { tFor } from '@/lib/i18n/server';
 import { AuthShell, HisabBubble } from '@/components/auth-shell';
-import { LoginForm } from './login-form';
+import { LoginForm } from '@/components/auth/login-form';
 
 export const metadata = { title: 'Sign in' };
 
-export default async function LoginPage() {
-  const ctx = await getCtx().catch(() => null);
-  if (ctx && (ctx.businessId || ctx.superAdmin)) redirect(ctx.businessId ? homeFor(ctx) : '/admin');
-  const { t } = await getT();
+export default async function LoginPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { t } = tFor((await params).lang);
   return (
     <AuthShell back={{ href: '/', label: t('auth.backToSite') }} aside={
       <div className="space-y-6">

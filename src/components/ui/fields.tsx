@@ -1,5 +1,6 @@
 'use client';
-import { useId, type ComponentProps, type ReactNode } from 'react';
+import { useId, useState, type ComponentProps, type ReactNode } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { withNext, nav } from '@/components/shell/perm';
 
@@ -14,13 +15,22 @@ export function Field({ label, error, hint, children, className = '' }: { label?
   );
 }
 
-export function TextInput({ label, error, hint, className, prefix, suffix, ...rest }: ComponentProps<'input'> & { label?: ReactNode; error?: string | null; hint?: ReactNode; prefix?: string; suffix?: string }) {
+export function TextInput({ label, error, hint, className, prefix, suffix, type, ...rest }: ComponentProps<'input'> & { label?: ReactNode; error?: string | null; hint?: ReactNode; prefix?: string; suffix?: string }) {
+  // password fields get an eye button to show / hide what was typed
+  const [show, setShow] = useState(false);
+  const isPw = type === 'password';
   return (
     <Field label={label} error={error} hint={hint} className={className}>
       {(id) => (
         <div className="relative">
           {prefix && <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-muted">{prefix}</span>}
-          <input id={id} aria-invalid={!!error || undefined} className={`input ${prefix ? 'pl-9' : ''} ${suffix ? 'pr-12' : ''} ${error ? 'border-bad' : ''}`} {...rest} />
+          <input id={id} type={isPw && show ? 'text' : type} aria-invalid={!!error || undefined} className={`input ${prefix ? 'pl-9' : ''} ${suffix || isPw ? 'pr-12' : ''} ${error ? 'border-bad' : ''}`} {...rest} />
+          {isPw && (
+            <button type="button" onClick={() => setShow((v) => !v)} aria-label={show ? 'Hide password' : 'Show password'} aria-pressed={show}
+              className="press absolute right-1.5 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-ink-muted hover:bg-mint hover:text-ink">
+              {show ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          )}
           {suffix && <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-ink-muted">{suffix}</span>}
         </div>
       )}

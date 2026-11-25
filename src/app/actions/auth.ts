@@ -70,9 +70,9 @@ export async function setupSuperAdmin(email: string, password: string, name: str
 export async function setLanguage(lang: string) {
   if (!isLocale(lang)) return;
   (await cookies()).set(LANG_COOKIE, lang, { path: '/', maxAge: 60 * 60 * 24 * 365, sameSite: 'lax' });
+  // remember it on the account too (silently does nothing when signed out)
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (user) await supabase.rpc('set_my_language', { p_language: lang });
+  await supabase.rpc('set_my_language', { p_language: lang }).then(() => {}, () => {});
 }
 
 const leadSchema = z.object({

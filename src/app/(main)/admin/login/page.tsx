@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getCtx } from '@/lib/session';
 import { createServiceClient } from '@/lib/supabase/server';
 import { AuthShell } from '@/components/auth-shell';
-import { LoginForm } from '@/app/login/login-form';
+import { LoginForm } from '@/components/auth/login-form';
 import { SetupForm } from './setup-form';
 
 export const metadata = { title: 'Super admin · PoulGo', robots: { index: false } };

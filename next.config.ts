@@ -16,7 +16,9 @@ const config: NextConfig = {
     return [
       { source: '/:path*', headers: securityHeaders },
       // never let a shared cache keep a page with business data
-      { source: '/((?!_next/static|icons|brand|manifest.webmanifest|sw.js).*)', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
+      // (website + sign-in pages are public and prebuilt, so they are left to the CDN)
+      ...['/app/:path*', '/app', '/admin/:path*', '/admin', '/driver/:path*', '/driver', '/change-password', '/no-access', '/suspended', '/api/:path*']
+        .map((source) => ({ source, headers: [{ key: 'Cache-Control', value: 'private, no-store' }] })),
       { source: '/brand/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=604800, stale-while-revalidate=86400' }] },
       { source: '/sw.js', headers: [{ key: 'Cache-Control', value: 'no-cache' }] },
     ];

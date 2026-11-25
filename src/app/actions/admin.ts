@@ -79,6 +79,9 @@ export async function adminResetOwnerPassword(userId: string): Promise<ActionRes
   if (!z.string().uuid().safeParse(userId).success) return { ok: false, code: 'VALIDATION', detail: '' };
   let admin;
   try { admin = createServiceClient(); } catch { return { ok: false, code: 'SERVICE_KEY', detail: '' }; }
+  // never touch a super admin's own login from here (it would lock the admin console behind "change password")
+  const { data: isAdmin } = await admin.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle();
+  if (isAdmin || userId === ctx.userId) return { ok: false, code: 'VALIDATION', detail: 'This login belongs to a super admin. Use a separate owner login.' };
   const password = tempPassword();
   const { data: u } = await admin.auth.admin.getUserById(userId);
   const { error } = await admin.auth.admin.updateUserById(userId, { password, user_metadata: { ...(u.user?.user_metadata ?? {}), must_change_password: true } });

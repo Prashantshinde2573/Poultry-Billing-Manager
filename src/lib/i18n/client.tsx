@@ -1,12 +1,16 @@
 'use client';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
-import { makeT, type Messages, type TFn } from './index';
+import { dictionaries, makeT, type TFn } from './index';
 import type { Locale } from '@/lib/format';
 
 const Ctx = createContext<{ locale: Locale; t: TFn } | null>(null);
 
-export function I18nProvider({ locale, messages, children }: { locale: Locale; messages: Messages; children: ReactNode }) {
-  const value = useMemo(() => ({ locale, t: makeT(messages) }), [locale, messages]);
+/**
+ * The dictionaries ship once inside the cached JS bundle; pages no longer carry the
+ * whole word list in every HTML response.
+ */
+export function I18nProvider({ locale, children }: { locale: Locale; children: ReactNode }) {
+  const value = useMemo(() => ({ locale, t: makeT(dictionaries[locale]) }), [locale]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

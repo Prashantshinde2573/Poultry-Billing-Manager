@@ -231,7 +231,7 @@ export function UsersSection({ members, me, serviceKey }: { members: Member[]; m
           <Segmented value={add.role} onChange={(r) => setAdd({ ...add, role: r })} options={[{ value: 'driver', label: t('set.role.driver') }, { value: 'staff', label: t('set.role.staff') }]} />
           <TextInput label={t('c.name')} value={add.name} onChange={(e) => setAdd({ ...add, name: e.target.value })} />
           <TextInput label={t('auth.identifier')} inputMode="email" value={add.login} onChange={(e) => setAdd({ ...add, login: e.target.value })} hint={t('set.loginHint')} />
-          <TextInput label={t('auth.password')} type="text" value={add.password} onChange={(e) => setAdd({ ...add, password: e.target.value })} hint={t('auth.passwordHint')} />
+          <TextInput label={t('auth.password')} type="password" autoComplete="new-password" value={add.password} onChange={(e) => setAdd({ ...add, password: e.target.value })} hint={t('auth.passwordHint')} />
           {add.role === 'staff' && PERMS.map((p) => <Check key={p} label={t(`set.perm.${p}`)} checked={add.permissions[p]} onChange={(v) => setAdd({ ...add, permissions: { ...add.permissions, [p]: v } })} />)}
           <ErrorBox msg={err} />
         </div>}
@@ -248,7 +248,7 @@ export function UsersSection({ members, me, serviceKey }: { members: Member[]; m
           <Check label={t('c.active')} checked={edit.active} onChange={(v) => setEdit({ ...edit, active: v })} />
           {serviceKey && (
             <div className="flex items-end gap-2 rounded-2xl bg-white/70 p-3">
-              <TextInput className="flex-1" label={t('set.resetPassword')} type="text" value={pw} onChange={(e) => setPw(e.target.value)} hint={t('auth.passwordHint')} />
+              <TextInput className="flex-1" label={t('set.resetPassword')} type="password" autoComplete="new-password" value={pw} onChange={(e) => setPw(e.target.value)} hint={t('auth.passwordHint')} />
               <Button variant="outline" disabled={pending || pw.length < 8} onClick={() => run(() => resetPassword(edit.user_id, pw), done)}><KeyRound className="h-4 w-4" /></Button>
             </div>
           )}

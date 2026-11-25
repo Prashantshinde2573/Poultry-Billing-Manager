@@ -1,15 +1,14 @@
 import { BadgeCheck, Banknote, Languages, MessageCircle, Phone as PhoneIcon, ReceiptText, ShieldCheck, Users } from 'lucide-react';
-import { getT } from '@/lib/i18n/server';
+import { tFor } from '@/lib/i18n/server';
 import { platform, publicPlans } from '@/lib/data/platform';
 import { SiteFooter, SiteNav } from '@/components/site/site-chrome';
 import { DashboardMock, DriverMock, Phone, WhatsAppHisab } from '@/components/site/mockups';
 import { SitePricing } from '@/components/site/site-pricing';
 import { LeadForm } from '@/components/site/lead-form';
 
-export const dynamic = 'force-dynamic';
 
-export default async function Home() {
-  const { t } = await getT();
+export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
+  const { t } = tFor((await params).lang);
   const [plans, pf] = await Promise.all([publicPlans(), platform()]);
   const wa = pf.whatsapp ? `https://wa.me/${pf.whatsapp}?text=${encodeURIComponent('PoulGo demo')}` : null;
   const day = [

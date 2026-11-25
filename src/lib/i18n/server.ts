@@ -14,3 +14,9 @@ export async function getT() {
   const locale = await getLocale();
   return { locale, t: makeT(dictionaries[locale]), messages: dictionaries[locale] };
 }
+
+/** For statically built pages: the language comes from the URL segment, not a cookie. */
+export function tFor(lang: string) {
+  const locale: Locale = isLocale(lang) ? lang : 'mr';
+  return { locale, t: makeT(dictionaries[locale]), messages: dictionaries[locale] };
+}
